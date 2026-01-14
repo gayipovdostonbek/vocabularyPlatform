@@ -3,11 +3,14 @@ export interface Word {
   english: string;
   uzbek: string;
   status: 'new' | 'learning' | 'learned';
+  category?: string;
+  learnedAt?: string; // ISO timestamp
+  masteryLevel?: number; // 0-4
+  lastReviewedAt?: string;
 }
 
 export interface AppState {
   words: Word[];
-  googleSheetUrl: string | null;
   dailyGoal: number;
   wordsLearnedToday: number;
 }

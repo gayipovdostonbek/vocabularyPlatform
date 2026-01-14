@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Repeat, CheckCircle } from 'lucide-react';
+import { Repeat, CheckCircle, Volume2 } from 'lucide-react';
 import type { Word } from '../types';
 import confetti from 'canvas-confetti';
 
@@ -13,6 +13,12 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
     const [isFlipped, setIsFlipped] = useState(false);
 
     const handleFlip = () => setIsFlipped(!isFlipped);
+
+    const speak = (text: string) => {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        window.speechSynthesis.speak(utterance);
+    };
 
     const handleKnown = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -32,16 +38,18 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
     };
 
     return (
-        <div style={{ perspective: 1000, width: '100%', maxWidth: '400px', height: '300px', margin: '2rem auto', cursor: 'pointer' }} onClick={handleFlip}>
+        <div className="flashcard-container" style={{ perspective: '1000px', width: '100%', height: '400px', margin: '2rem auto', cursor: 'pointer' }} onClick={handleFlip}>
             <motion.div
+                className="flashcard"
+                initial={false}
+                animate={{ rotateY: isFlipped ? 180 : 0 }}
+                transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
                 style={{
                     width: '100%',
                     height: '100%',
                     position: 'relative',
                     transformStyle: 'preserve-3d',
                 }}
-                animate={{ rotateY: isFlipped ? 180 : 0 }}
-                transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
             >
                 {/* Front */}
                 <div
@@ -58,9 +66,32 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
                         background: 'linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.95) 100%)'
                     }}
                 >
-                    <span style={{ fontSize: '0.9rem', color: 'var(--accent)', textTransform: 'uppercase', marginBottom: '1rem', letterSpacing: '2px' }}>English</span>
+                    <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); speak(word.english); }}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--accent)', cursor: 'pointer', padding: '0.5rem' }}
+                            title="Listen"
+                        >
+                            <Volume2 size={24} />
+                        </button>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1.5rem' }}>
+                        {[0, 1, 2, 3].map((lvl) => (
+                            <div
+                                key={lvl}
+                                style={{
+                                    width: '10px',
+                                    height: '10px',
+                                    borderRadius: '50%',
+                                    background: (word.masteryLevel || 0) > lvl ? 'var(--success)' : 'rgba(255,255,255,0.1)',
+                                    boxShadow: (word.masteryLevel || 0) > lvl ? '0 0 10px var(--success)' : 'none'
+                                }}
+                            />
+                        ))}
+                    </div>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--accent)', textTransform: 'uppercase', marginBottom: '1rem', letterSpacing: '2px' }}>Inglizcha</span>
                     <h2 style={{ fontSize: '2.5rem', fontWeight: 700, margin: 0 }}>{word.english}</h2>
-                    <p style={{ marginTop: '2rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Click to flip</p>
+                    <p style={{ marginTop: '2rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Kartani aylantirish uchun bosing</p>
                 </div>
 
                 {/* Back */}
@@ -79,7 +110,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
                         background: 'linear-gradient(135deg, rgba(76,29,149,0.8) 0%, rgba(15,23,42,0.95) 100%)'
                     }}
                 >
-                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '1rem', letterSpacing: '2px' }}>Translation</span>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '1rem', letterSpacing: '2px' }}>Tarjimasi</span>
                     <h2 style={{ fontSize: '2.5rem', fontWeight: 700, margin: 0, color: '#e2e8f0' }}>{word.uzbek}</h2>
 
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '3rem' }}>
@@ -88,14 +119,14 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
                             onClick={handleStudyAgain}
                             style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.3)', border: 'none', color: '#ff8a8a' }}
                         >
-                            <Repeat size={18} /> Hard
+                            <Repeat size={18} /> Qiyin
                         </button>
                         <button
                             className="btn btn-primary"
                             onClick={handleKnown}
                             style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--success)', boxShadow: '0 0 20px rgba(16,185,129,0.4)' }}
                         >
-                            <CheckCircle size={18} /> I Know It
+                            <CheckCircle size={18} /> Yodladim
                         </button>
                     </div>
                 </div>
