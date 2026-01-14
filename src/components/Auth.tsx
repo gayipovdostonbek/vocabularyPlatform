@@ -72,7 +72,7 @@ export const Auth: React.FC = () => {
                         {isLogin ? <LogIn size={36} /> : <UserPlus size={36} />}
                     </motion.div>
 
-                    <h2 style={{ marginBottom: '0.5rem', fontSize: '2.2rem', fontWeight: 800, background: 'linear-gradient(to bottom, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    <h2 style={{ marginBottom: '0.5rem', fontSize: '2.2rem', fontWeight: 800, background: 'var(--title-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                         {isLogin ? 'Xush Kelibsiz' : 'Hisob Yarating'}
                     </h2>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
@@ -89,8 +89,8 @@ export const Auth: React.FC = () => {
                             initial={{ opacity: 0, y: -10 }}
                             exit={{ opacity: 0, y: -10 }}
                             style={{
-                                background: 'rgba(239, 68, 68, 0.1)',
-                                border: '1px solid rgba(239, 68, 68, 0.2)',
+                                background: 'rgba(239, 68, 68, 0.05)',
+                                border: '1px solid rgba(239, 68, 68, 0.1)',
                                 color: 'var(--error)',
                                 padding: '1rem',
                                 borderRadius: '0.75rem',
@@ -179,7 +179,7 @@ export const Auth: React.FC = () => {
                     </button>
                 </form>
 
-                <div style={{ marginTop: '2.5rem', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.5rem' }}>
+                <div style={{ marginTop: '2.5rem', textAlign: 'center', borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
                         {isLogin ? "Hisobingiz yo'qmi?" : "Hisobingiz bormi?"}
                         <button

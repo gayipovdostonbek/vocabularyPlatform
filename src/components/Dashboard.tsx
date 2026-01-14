@@ -7,9 +7,9 @@ interface DashboardProps {
     words: Word[];
     dailyGoal: number;
     streak?: number;
-    onStart: () => void;
+    onStart: (mode: 'flashcard' | 'quiz' | 'spelling') => void;
     onReset: () => void;
-    onManage: () => void;
+    onManage: (filter?: 'all' | 'learning' | 'learned') => void;
     onOpenSettings: () => void;
 }
 
@@ -30,6 +30,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const speak = (text: string) => {
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-US';
+        utterance.rate = 0.9;
         window.speechSynthesis.speak(utterance);
     };
 
@@ -37,7 +38,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const learned = words.filter(w => w.status === 'learned').length;
 
     const today = new Date().toISOString().split('T')[0];
-    const learnedToday = words.filter(w => w.status === 'learned' && w.learnedAt?.startsWith(today)).length;
+    const learnedToday = words.filter(w => w.lastReviewedAt?.startsWith(today)).length;
     const progress = Math.min(100, Math.round((learnedToday / dailyGoal) * 100));
 
     // Last 7 days chart data
@@ -69,20 +70,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <div>
                             <h3 style={{ margin: 0, color: 'var(--text-muted)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Kunlik Progress</h3>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginTop: '0.5rem' }}>
-                                <span style={{ fontSize: '3rem', fontWeight: 800 }}>{learnedToday}</span>
+                                <span style={{ fontSize: '3rem', fontWeight: 800, color: 'var(--text-main)' }}>{learnedToday}</span>
                                 <span style={{ color: 'var(--text-muted)' }}>/ {dailyGoal} ta so'z</span>
                             </div>
                         </div>
                         <button
                             onClick={onOpenSettings}
-                            style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--text-muted)', padding: '0.5rem', borderRadius: '0.5rem', cursor: 'pointer' }}
+                            style={{ background: 'var(--subtle-bg)', border: 'none', color: 'var(--text-muted)', padding: '0.5rem', borderRadius: '0.5rem', cursor: 'pointer' }}
                             title="Maqsadni sozlash"
                         >
                             <Settings size={20} />
                         </button>
                     </div>
 
-                    <div style={{ background: 'rgba(255,255,255,0.05)', height: '12px', borderRadius: '6px', overflow: 'hidden', marginBottom: '1rem' }}>
+                    <div style={{ background: 'var(--subtle-bg)', height: '12px', borderRadius: '6px', overflow: 'hidden', marginBottom: '1rem' }}>
                         <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${progress}%` }}
@@ -124,12 +125,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         </div>
                         <Award size={32} color="var(--accent)" opacity={0.5} />
                     </div>
-                    <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div
+                        className="glass-panel"
+                        onClick={() => onManage('learned')}
+                        style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', transition: 'transform 0.2s', border: '1px solid rgba(34, 197, 94, 0.2)' }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                    >
                         <div>
                             <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>Yodlangan</div>
                             <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>{learned}</div>
                         </div>
-                        <div style={{ background: 'rgba(16,185,129,0.1)', padding: '0.5rem', borderRadius: '0.5rem', color: 'var(--success)', fontSize: '0.8rem', fontWeight: 600 }}>
+                        <div style={{ background: 'var(--success)', padding: '0.5rem', borderRadius: '0.5rem', color: '#ffffff', fontSize: '0.8rem', fontWeight: 600, opacity: 0.9 }}>
                             {Math.round((learned / total) * 100 || 0)}%
                         </div>
                     </div>
@@ -138,7 +145,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             {/* Activity Chart */}
             <div className="glass-panel" style={{ marginTop: '2rem', padding: '2rem' }}>
-                <h3 style={{ margin: '0 0 2rem 0', fontSize: '1.1rem' }}>Oxirgi 7 kunlik faollik</h3>
+                <h3 style={{ margin: '0 0 2rem 0', fontSize: '1.1rem', color: 'var(--text-main)' }}>Oxirgi 7 kunlik faollik</h3>
                 <div className="chart-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '150px', gap: '0.5rem' }}>
                     {last7Days.map((data, i) => (
                         <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
@@ -168,7 +175,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <div className="glass-panel word-of-the-day" style={{
                     marginTop: '2rem',
                     padding: '1.5rem 2rem',
-                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(30, 41, 59, 0.7) 100%)',
+                    background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, var(--glass-bg) 100%)',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
@@ -181,9 +188,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <div>
                             <h4 style={{ margin: 0, color: 'var(--accent)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Kun so'zi</h4>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.25rem' }}>
-                                <span style={{ fontSize: '1.5rem', fontWeight: 700 }}>{wordOfTheDay.english}</span>
+                                <span style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-main)' }}>{wordOfTheDay.english}</span>
                                 <span style={{ color: 'var(--text-muted)' }}>—</span>
-                                <span style={{ fontSize: '1.25rem' }}>{wordOfTheDay.uzbek}</span>
+                                <span style={{ fontSize: '1.25rem', color: 'var(--text-main)' }}>{wordOfTheDay.uzbek}</span>
                                 <button
                                     onClick={() => speak(wordOfTheDay.english)}
                                     style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem', display: 'flex', alignItems: 'center' }}
@@ -193,9 +200,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 </button>
                             </div>
                             {wordOfTheDay.example && (
-                                <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                                    "{wordOfTheDay.example}"
-                                    {wordOfTheDay.exampleTranslation && <span style={{ fontStyle: 'normal', opacity: 0.6, marginLeft: '0.5rem' }}>— {wordOfTheDay.exampleTranslation}</span>}
+                                <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                    <span>"{wordOfTheDay.example}"</span>
+                                    <button
+                                        onClick={() => speak(wordOfTheDay.example!)}
+                                        style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem', display: 'flex', alignItems: 'center', opacity: 0.6 }}
+                                        title="Gapni eshitish"
+                                    >
+                                        <Volume2 size={14} />
+                                    </button>
+                                    {wordOfTheDay.exampleTranslation && <span style={{ fontStyle: 'normal', color: 'var(--text-main)', opacity: 0.7, marginLeft: '0.5rem' }}>— {wordOfTheDay.exampleTranslation}</span>}
                                 </div>
                             )}
                         </div>
@@ -211,7 +225,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                         width: '8px',
                                         height: '8px',
                                         borderRadius: '50%',
-                                        background: (wordOfTheDay.masteryLevel || 0) > lvl ? 'var(--success)' : 'rgba(255,255,255,0.1)'
+                                        background: (wordOfTheDay.masteryLevel || 0) > lvl ? 'var(--success)' : 'var(--subtle-bg)'
                                     }}
                                 />
                             ))}
@@ -223,11 +237,50 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {/* Quick Start Sections */}
             <div style={{ marginTop: '3rem' }}>
                 <h3 style={{ marginBottom: '1.5rem' }}>O'rganishni boshlash</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-                    <button className="btn btn-primary" onClick={() => onStart()} style={{ height: '4rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
-                        <Play fill="white" size={20} /> Mashqni boshlash
-                    </button>
-                    <button className="btn btn-secondary" onClick={onManage} style={{ height: '4rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+                    <div className="glass-panel mode-card" style={{
+                        padding: '1.5rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '1rem',
+                        border: '1px solid var(--accent)',
+                        background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, var(--glass-bg) 100%)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{ padding: '0.5rem', background: 'var(--accent)', borderRadius: '0.5rem' }}>
+                                <Play fill="white" size={20} />
+                            </div>
+                            <h4 style={{ margin: 0 }}>Flesh-kartalar</h4>
+                        </div>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Yuzma-yuz usulida so'zlarni yodlash va o'zingizni tekshirish.</p>
+                        <button className="btn btn-primary" onClick={() => onStart('flashcard')} style={{ marginTop: 'auto' }}>
+                            Boshlash
+                        </button>
+                    </div>
+
+                    <div className="glass-panel mode-card" style={{
+                        padding: '1.5rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '1rem',
+                        border: '1px solid var(--success)',
+                        background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, var(--glass-bg) 100%)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                            <div style={{ padding: '0.5rem', background: 'var(--success)', borderRadius: '0.5rem' }}>
+                                <Award color="white" size={20} />
+                            </div>
+                            <h4 style={{ margin: 0 }}>Multiple Choice</h4>
+                        </div>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>To'rtta variant ichidan to'g'risini topib bilimingizni sinang.</p>
+                        <button className="btn btn-primary" onClick={() => onStart('quiz')} style={{ background: 'var(--success)', marginTop: 'auto' }}>
+                            Testni boshlash
+                        </button>
+                    </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                    <button className="btn btn-secondary" onClick={() => onManage()} style={{ height: '4rem' }}>
                         Lug'at
                     </button>
                     <button className="btn btn-secondary" onClick={onReset} style={{ height: '4rem', color: 'var(--error)', borderColor: 'rgba(239,68,68,0.2)' }}>

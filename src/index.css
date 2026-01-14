@@ -8,17 +8,46 @@
   --accent: #8b5cf6;
   --accent-glow: rgba(139, 92, 246, 0.5);
   --text-main: #f8fafc;
-  --text-muted: #94a3b8;
+  --text-muted: #cbd5e1;
+  --text-lowest: #94a3b8;
   --success: #10b981;
   --error: #ef4444;
+  --glass-bg: rgba(30, 41, 59, 0.7);
+  --input-bg: rgba(15, 23, 42, 0.6);
+  --subtle-bg: rgba(255, 255, 255, 0.15);
+  --overlay-bg: rgba(0, 0, 0, 0.7);
+  --border-color: rgba(255, 255, 255, 0.1);
+  --gradient-start: #1e1b4b;
+  --gradient-end: #0f172a;
+  --card-front-bg: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+  --card-back-bg: linear-gradient(135deg, rgba(76, 29, 149, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);
+  --card-subtle-bg: rgba(0, 0, 0, 0.2);
+  --title-gradient: linear-gradient(to bottom, #ffffff, #cbd5e1);
   
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: dark;
-  color: var(--text-main);
-  background-color: var(--bg-primary);
+}
+
+body.light-theme {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-lowest: #64748b;
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --input-bg: rgba(241, 245, 249, 0.8);
+  --subtle-bg: rgba(0, 0, 0, 0.05);
+  --overlay-bg: rgba(0, 0, 0, 0.4);
+  --border-color: rgba(0, 0, 0, 0.1);
+  --gradient-start: #f1f5f9;
+  --gradient-end: #f8fafc;
+  --card-front-bg: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+  --card-back-bg: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  --title-gradient: linear-gradient(to bottom, #0f172a, #475569);
+  color-scheme: light;
 }
 
 body {
@@ -27,7 +56,9 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  background: radial-gradient(circle at top center, #1e1b4b, #0f172a);
+  color: var(--text-main);
+  background: radial-gradient(circle at top center, var(--gradient-start), var(--gradient-end)), var(--bg-primary);
+  transition: all 0.3s ease;
 }
 
 #root {
@@ -40,12 +71,13 @@ body {
 
 /* Utilities */
 .glass-panel {
-  background: rgba(30, 41, 59, 0.7);
+  background: var(--glass-bg);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-color);
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .btn {
@@ -83,16 +115,21 @@ body {
   width: 100%;
   padding: 0.8rem 1rem;
   margin: 0.5rem 0;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
-  color: white;
+  color: var(--text-main);
   font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.3s ease;
 }
 .input-field:focus {
   border-color: var(--accent);
+}
+
+.input-field::placeholder {
+  color: var(--text-muted);
+  opacity: 0.8;
 }
 
 /* Animations */

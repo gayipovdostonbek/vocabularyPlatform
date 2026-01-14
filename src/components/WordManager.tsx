@@ -6,11 +6,12 @@ import { Plus, Trash2, X, RefreshCw, Pencil, Check, XCircle, Volume2 } from 'luc
 interface WordManagerProps {
     userId: string;
     words: Word[];
+    initialFilter?: 'all' | 'learning' | 'learned';
     onUpdate: (words: Word[]) => void;
     onClose: () => void;
 }
 
-export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdate, onClose }) => {
+export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initialFilter = 'all', onUpdate, onClose }) => {
     const [newEnglish, setNewEnglish] = useState('');
     const [newUzbek, setNewUzbek] = useState('');
     const [newExample, setNewExample] = useState('');
@@ -18,6 +19,7 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
     const [loading, setLoading] = useState(false);
     const [syncing, setSyncing] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'learning' | 'learned'>(initialFilter);
 
     // Editing State
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -26,16 +28,22 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
     const [editExample, setEditExample] = useState('');
     const [editExampleTranslation, setEditExampleTranslation] = useState('');
 
+    // Delete confirmation state
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+
     const speak = (text: string) => {
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-US';
+        utterance.rate = 0.9;
         window.speechSynthesis.speak(utterance);
     };
 
-    const filteredWords = words.filter(word =>
-        word.english.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        word.uzbek.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredWords = words.filter(word => {
+        const matchesSearch = word.english.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            word.uzbek.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || word.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
 
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -64,11 +72,16 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Delete this word?')) return;
+    const handleDelete = (id: string) => {
+        setShowDeleteConfirm(id);
+    };
+
+    const confirmDelete = async () => {
+        if (!showDeleteConfirm) return;
         try {
-            await firebaseService.deleteWord(userId, id);
-            onUpdate(words.filter(w => w.id !== id));
+            await firebaseService.deleteWord(userId, showDeleteConfirm);
+            onUpdate(words.filter(w => w.id !== showDeleteConfirm));
+            setShowDeleteConfirm(null);
         } catch (err) {
             alert('Failed to delete');
         }
@@ -137,20 +150,58 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
                 </div>
             </div>
 
-            {/* Search and Add Form */}
-            <div style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* Filter Tabs and Search */}
+            <div style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div style={{ display: 'flex', background: 'var(--subtle-bg)', padding: '0.3rem', borderRadius: '0.75rem', gap: '0.2rem' }}>
+                    {[
+                        { id: 'all', label: 'Barchasi', count: words.length },
+                        { id: 'learning', label: 'Yodlanayotgan', count: words.filter(w => w.status === 'learning' || w.status === 'new').length },
+                        { id: 'learned', label: 'Yodlangan', count: words.filter(w => w.status === 'learned').length }
+                    ].map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setStatusFilter(tab.id as any)}
+                            style={{
+                                flex: 1,
+                                padding: '0.6rem',
+                                border: 'none',
+                                borderRadius: '0.6rem',
+                                background: statusFilter === tab.id ? 'var(--accent)' : 'transparent',
+                                color: statusFilter === tab.id ? 'white' : 'var(--text-muted)',
+                                fontSize: '0.85rem',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.5rem'
+                            }}
+                        >
+                            {tab.label}
+                            <span style={{
+                                opacity: 0.7,
+                                fontSize: '0.75rem',
+                                background: statusFilter === tab.id ? 'rgba(255,255,255,0.2)' : 'var(--border-color)',
+                                padding: '0.1rem 0.4rem',
+                                borderRadius: '1rem'
+                            }}>{tab.count}</span>
+                        </button>
+                    ))}
+                </div>
+
                 <div style={{ position: 'relative' }}>
                     <input
                         className="input-field"
                         placeholder="So'zlarni qidirish..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        style={{ margin: 0, paddingLeft: '2.5rem' }}
+                        style={{ margin: 0, paddingLeft: '2.75rem' }}
                     />
-                    <span style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>🔍</span>
+                    <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '1rem' }}>🔍</span>
                 </div>
 
-                <form onSubmit={handleAdd} className="responsive-grid" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'rgba(0,0,0,0.2)', padding: '1.25rem', borderRadius: '0.75rem' }}>
+                <form onSubmit={handleAdd} className="responsive-grid" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--subtle-bg)', padding: '1.25rem', borderRadius: '0.75rem' }}>
                     <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                         <input
                             className="input-field"
@@ -200,7 +251,7 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
                 ) : (
                     <table className="responsive-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ textAlign: 'left', color: 'var(--text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                            <tr style={{ textAlign: 'left', color: 'var(--text-muted)', borderBottom: '1px solid var(--border-color)' }}>
                                 <th style={{ padding: '0.5rem' }}>Inglizcha</th>
                                 <th style={{ padding: '0.5rem' }}>O'zbekcha</th>
                                 <th style={{ padding: '0.5rem' }}>O'zlashtirish</th>
@@ -211,7 +262,7 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
                             {filteredWords.map(word => {
                                 const isEditing = editingId === word.id;
                                 return (
-                                    <tr key={word.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: isEditing ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
+                                    <tr key={word.id} style={{ borderBottom: '1px solid var(--border-color)', background: isEditing ? 'var(--subtle-bg)' : 'transparent' }}>
                                         <td style={{ padding: '0.75rem 0.5rem' }}>
                                             {isEditing ? (
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
@@ -221,16 +272,27 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
                                             ) : (
                                                 <div>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                        <span style={{ fontWeight: 600 }}>{word.english}</span>
+                                                        <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{word.english}</span>
                                                         <button
                                                             onClick={() => speak(word.english)}
-                                                            style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem' }}
+                                                            style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem', opacity: 0.7 }}
                                                             title="Eshitish"
                                                         >
                                                             <Volume2 size={14} />
                                                         </button>
                                                     </div>
-                                                    {word.example && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '0.1rem' }}>"{word.example}"</div>}
+                                                    {word.example && (
+                                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '0.1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                            <span>"{word.example}"</span>
+                                                            <button
+                                                                onClick={() => speak(word.example!)}
+                                                                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.1rem', display: 'flex', alignItems: 'center', opacity: 0.5 }}
+                                                                title="Gapni eshitish"
+                                                            >
+                                                                <Volume2 size={12} />
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </td>
@@ -242,8 +304,8 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
                                                 </div>
                                             ) : (
                                                 <div>
-                                                    <div style={{ color: '#e2e8f0' }}>{word.uzbek}</div>
-                                                    {word.exampleTranslation && <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', marginTop: '0.1rem' }}>{word.exampleTranslation}</div>}
+                                                    <div style={{ color: 'var(--text-main)' }}>{word.uzbek}</div>
+                                                    {word.exampleTranslation && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>{word.exampleTranslation}</div>}
                                                 </div>
                                             )}
                                         </td>
@@ -256,7 +318,7 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
                                                             width: '6px',
                                                             height: '6px',
                                                             borderRadius: '50%',
-                                                            background: (word.masteryLevel || 0) > lvl ? 'var(--success)' : 'rgba(255,255,255,0.1)'
+                                                            background: (word.masteryLevel || 0) > lvl ? 'var(--success)' : 'var(--subtle-bg)'
                                                         }}
                                                     />
                                                 ))}
@@ -291,6 +353,41 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
                 )}
             </div>
 
+            {/* Custom Confirm Modal */}
+            {
+                showDeleteConfirm && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'var(--overlay-bg)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 2000,
+                        padding: '1rem'
+                    }}>
+                        <div className="glass-panel" style={{ padding: '2rem', maxWidth: '350px', textAlign: 'center', border: '1px solid var(--border-color)' }}>
+                            <div style={{ background: 'rgba(239, 68, 68, 0.05)', color: 'var(--error)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                                <Trash2 size={30} />
+                            </div>
+                            <h3 style={{ margin: '0 0 1rem 0' }}>So'zni o'chirasizmi?</h3>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '2rem' }}>O'chirilgan so'zni qayta tiklab bo'lmaydi.</p>
+                            <div style={{ display: 'flex', gap: '1rem' }}>
+                                <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setShowDeleteConfirm(null)}>
+                                    Bekor qilish
+                                </button>
+                                <button className="btn btn-primary" style={{ flex: 1, background: 'var(--error)' }} onClick={confirmDelete}>
+                                    O'chirish
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
             <style>{`
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -305,6 +402,6 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
             }
         }
       `}</style>
-        </div>
+        </div >
     );
 };

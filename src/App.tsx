@@ -6,12 +6,16 @@ import { firebaseService } from './api/firebaseService';
 import { authService } from './api/authService';
 import { Auth } from './components/Auth';
 import type { Word } from './types';
-import { ArrowLeft, LogOut, CheckCircle } from 'lucide-react';
+import { ArrowLeft, LogOut, CheckCircle, Sun, Moon } from 'lucide-react';
 import type { User } from 'firebase/auth';
 import confetti from 'canvas-confetti';
 import { soundService } from './api/soundService';
 
+import { Quiz } from './components/Quiz';
+import { SpellingQuiz } from './components/SpellingQuiz';
+
 type ViewMode = 'DASHBOARD' | 'STUDY' | 'MANAGE' | 'SETTINGS';
+type StudyMode = 'flashcard' | 'quiz' | 'spelling';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -23,7 +27,13 @@ function App() {
   const [dailyGoal, setDailyGoal] = useState<number>(10);
   const [streak, setStreak] = useState<number>(0);
   const [lastActivity, setLastActivity] = useState<string | undefined>(undefined);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('vocab_theme');
+    return saved ? saved === 'dark' : true;
+  });
 
+  const [wordFilter, setWordFilter] = useState<'all' | 'learning' | 'learned'>('all');
+  const [studyMode, setStudyMode] = useState<StudyMode>('flashcard');
   const [studyQueue, setStudyQueue] = useState<Word[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -34,6 +44,15 @@ function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.remove('light-theme');
+    } else {
+      document.body.classList.add('light-theme');
+    }
+    localStorage.setItem('vocab_theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
 
   const loadWords = async () => {
     if (!user) return;
@@ -64,7 +83,7 @@ function App() {
     }
   }, [user]);
 
-  const handleStartStudy = () => {
+  const handleStartStudy = (mode: StudyMode = 'flashcard') => {
     const toLearn = words.filter(w => w.status !== 'learned');
 
     if (toLearn.length === 0) {
@@ -75,6 +94,7 @@ function App() {
     const shuffled = [...toLearn].sort(() => Math.random() - 0.5);
     setStudyQueue(shuffled);
     setCurrentIndex(0);
+    setStudyMode(mode);
     setView('STUDY');
   };
 
@@ -111,7 +131,12 @@ function App() {
     setWords(words.map(w => w.id === word.id ? updatedWord : w));
 
     // Update Firebase
-    await firebaseService.updateWord(user.uid, updatedWord);
+    try {
+      await firebaseService.updateWord(user.uid, updatedWord);
+    } catch (err: any) {
+      console.error("Failed to update word in Firebase:", err);
+      setError("Progressni saqlashda xatolik yuz berdi: " + err.message);
+    }
 
     // Move to next
     if (currentIndex < studyQueue.length - 1) {
@@ -123,9 +148,18 @@ function App() {
         spread: 100,
         origin: { y: 0.6 }
       });
-      await updateStreak(); // Sync streak on completion
+      try {
+        await updateStreak(); // Sync streak on completion
+      } catch (err: any) {
+        console.error("Failed to update streak:", err);
+      }
       setTimeout(() => setView('DASHBOARD'), 1500);
     }
+  };
+
+  const handleManage = (filter: 'all' | 'learning' | 'learned' = 'all') => {
+    setWordFilter(filter);
+    setView('MANAGE');
   };
 
   const handleReset = () => {
@@ -185,20 +219,37 @@ function App() {
         alignItems: 'center',
         padding: '1.5rem 0',
         marginBottom: '2rem',
-        borderBottom: '1px solid rgba(255,255,255,0.05)'
+        borderBottom: '1px solid var(--border-color)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{ width: '32px', height: '32px', background: 'var(--accent)', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <CheckCircle size={18} color="white" />
           </div>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>VocabMaster</h1>
+          <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>VocabMaster</h1>
         </div>
 
         <div className="user-nav" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <span className="user-email" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{user.email}</span>
           <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            style={{
+              background: 'var(--subtle-bg)',
+              border: 'none',
+              color: 'var(--text-main)',
+              cursor: 'pointer',
+              padding: '0.5rem',
+              borderRadius: '0.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            title={isDarkMode ? "Light mode" : "Dark mode"}
+          >
+            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+          <button
             onClick={handleLogout}
-            style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#f87171', cursor: 'pointer', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+            style={{ background: 'var(--subtle-bg)', border: 'none', color: '#f87171', cursor: 'pointer', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
             title="Chiqish"
           >
             <LogOut size={16} /> <span style={{ fontSize: '0.85rem' }}>Chiqish</span>
@@ -252,7 +303,7 @@ function App() {
             streak={streak}
             onStart={handleStartStudy}
             onReset={handleReset}
-            onManage={() => setView('MANAGE')}
+            onManage={handleManage}
             onOpenSettings={() => setView('SETTINGS')}
           />
         )}
@@ -286,6 +337,7 @@ function App() {
           <WordManager
             userId={user.uid}
             words={words}
+            initialFilter={wordFilter}
             onUpdate={(updated) => setWords(updated)}
             onClose={() => setView('DASHBOARD')}
           />
@@ -297,11 +349,26 @@ function App() {
               So'z {currentIndex + 1} / {studyQueue.length}
             </div>
 
-            <Flashcard
-              key={studyQueue[currentIndex].id}
-              word={studyQueue[currentIndex]}
-              onResult={handleCardResult}
-            />
+            {studyMode === 'flashcard' ? (
+              <Flashcard
+                key={studyQueue[currentIndex].id}
+                word={studyQueue[currentIndex]}
+                onResult={handleCardResult}
+              />
+            ) : studyMode === 'quiz' ? (
+              <Quiz
+                key={studyQueue[currentIndex].id}
+                word={studyQueue[currentIndex]}
+                allWords={words}
+                onResult={handleCardResult}
+              />
+            ) : (
+              <SpellingQuiz
+                key={studyQueue[currentIndex].id}
+                word={studyQueue[currentIndex]}
+                onResult={handleCardResult}
+              />
+            )}
           </div>
         )}
       </main>

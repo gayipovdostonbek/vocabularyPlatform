@@ -4,6 +4,16 @@ import type { Word } from '../types';
 
 const getWordsCollection = (userId: string) => collection(db, 'users', userId, 'words');
 
+const cleanData = (obj: any) => {
+    const newObj = { ...obj };
+    Object.keys(newObj).forEach(key => {
+        if (newObj[key] === undefined || newObj[key] === null) {
+            delete newObj[key];
+        }
+    });
+    return newObj;
+};
+
 export const firebaseService = {
   
   async syncWords(userId: string): Promise<Word[]> {
@@ -17,11 +27,11 @@ export const firebaseService = {
   },
 
   async addWord(userId: string, word: { english: string; uzbek: string; example?: string; exampleTranslation?: string }): Promise<string> {
-    const docRef = await addDoc(getWordsCollection(userId), {
+    const docRef = await addDoc(getWordsCollection(userId), cleanData({
       ...word,
       status: 'new',
       createdAt: new Date().toISOString()
-    });
+    }));
     return docRef.id;
   },
 
@@ -29,13 +39,16 @@ export const firebaseService = {
     const wordRef = doc(db, 'users', userId, 'words', word.id);
     const { id, ...data } = word;
     
-    if (data.status === 'learned' && !data.learnedAt) {
-        data.learnedAt = new Date().toISOString();
-    } else if (data.status !== 'learned') {
-        data.learnedAt = undefined;
+    const cleanUpdate = cleanData(data);
+
+    if (cleanUpdate.status === 'learned' && !cleanUpdate.learnedAt) {
+        cleanUpdate.learnedAt = new Date().toISOString();
+    } else if (cleanUpdate.status !== 'learned') {
+        // We don't set to undefined here, we just leave it out 
+        // Or if we want to explicitly remove it, we'd need deleteField()
     }
 
-    await updateDoc(wordRef, data);
+    await updateDoc(wordRef, cleanUpdate);
   },
 
   async deleteWord(userId: string, id: string): Promise<void> {
@@ -60,6 +73,6 @@ export const firebaseService = {
 
   async updateSettings(userId: string, settings: Partial<{ dailyGoal: number; currentStreak: number; lastActivityDate: string }>): Promise<void> {
     const userRef = doc(db, 'users', userId);
-    await setDoc(userRef, settings, { merge: true });
+    await setDoc(userRef, cleanData(settings), { merge: true });
   }
 };

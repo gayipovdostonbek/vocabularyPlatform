@@ -17,6 +17,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
     const speak = (text: string) => {
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'en-US';
+        utterance.rate = 0.9;
         window.speechSynthesis.speak(utterance);
     };
 
@@ -63,7 +64,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
                         flexDirection: 'column',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        background: 'linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.95) 100%)'
+                        background: 'var(--card-front-bg)'
                     }}
                 >
                     <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
@@ -83,14 +84,14 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
                                     width: '10px',
                                     height: '10px',
                                     borderRadius: '50%',
-                                    background: (word.masteryLevel || 0) > lvl ? 'var(--success)' : 'rgba(255,255,255,0.1)',
+                                    background: (word.masteryLevel || 0) > lvl ? 'var(--success)' : 'var(--subtle-bg)',
                                     boxShadow: (word.masteryLevel || 0) > lvl ? '0 0 10px var(--success)' : 'none'
                                 }}
                             />
                         ))}
                     </div>
                     <span style={{ fontSize: '0.9rem', color: 'var(--accent)', textTransform: 'uppercase', marginBottom: '1rem', letterSpacing: '2px' }}>Inglizcha</span>
-                    <h2 style={{ fontSize: '2.5rem', fontWeight: 700, margin: 0 }}>{word.english}</h2>
+                    <h2 style={{ fontSize: '2.5rem', fontWeight: 700, margin: 0, color: 'var(--text-main)' }}>{word.english}</h2>
                     <p style={{ marginTop: '2rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>Kartani aylantirish uchun bosing</p>
                 </div>
 
@@ -107,26 +108,34 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
                         flexDirection: 'column',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        background: 'linear-gradient(135deg, rgba(76,29,149,0.8) 0%, rgba(15,23,42,0.95) 100%)',
+                        background: 'var(--card-back-bg)',
                         padding: '2rem'
                     }}
                 >
-                    <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '2px' }}>Tarjimasi</span>
-                    <h2 style={{ fontSize: '2.5rem', fontWeight: 700, margin: 0, color: '#e2e8f0', textAlign: 'center' }}>{word.uzbek}</h2>
+                    <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '2px' }}>Tarjimasi</span>
+                    <h2 style={{ fontSize: '2.5rem', fontWeight: 700, margin: 0, color: '#ffffff', textAlign: 'center' }}>{word.uzbek}</h2>
 
                     {word.example && (
                         <div style={{
                             marginTop: '2rem',
                             padding: '1rem',
-                            background: 'rgba(0,0,0,0.2)',
+                            background: 'var(--card-subtle-bg)',
                             borderRadius: '0.75rem',
                             width: '100%',
                             textAlign: 'center',
-                            borderLeft: '4px solid var(--accent)'
+                            borderLeft: '4px solid var(--accent)',
+                            position: 'relative'
                         }}>
-                            <p style={{ margin: 0, fontSize: '1.1rem', color: '#fff', fontStyle: 'italic' }}>"{word.example}"</p>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); speak(word.example!); }}
+                                style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
+                                title="Gapni eshitish"
+                            >
+                                <Volume2 size={16} />
+                            </button>
+                            <p style={{ margin: 0, fontSize: '1.1rem', color: '#ffffff', fontStyle: 'italic' }}>"{word.example}"</p>
                             {word.exampleTranslation && (
-                                <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-muted)' }}>{word.exampleTranslation}</p>
+                                <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>{word.exampleTranslation}</p>
                             )}
                         </div>
                     )}
@@ -135,7 +144,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
                         <button
                             className="btn btn-secondary"
                             onClick={handleStudyAgain}
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(0,0,0,0.3)', border: 'none', color: '#ff8a8a' }}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--card-subtle-bg)', border: 'none', color: '#ffabab' }}
                         >
                             <Repeat size={18} /> Qiyin
                         </button>
