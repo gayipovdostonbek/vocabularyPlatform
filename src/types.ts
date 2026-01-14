@@ -3,10 +3,11 @@ export interface Word {
   english: string;
   uzbek: string;
   status: 'new' | 'learning' | 'learned';
-  category?: string;
   learnedAt?: string; // ISO timestamp
   masteryLevel?: number; // 0-4
   lastReviewedAt?: string;
+  example?: string;
+  exampleTranslation?: string;
 }
 
 export interface AppState {

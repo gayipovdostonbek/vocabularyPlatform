@@ -16,7 +16,7 @@ export const firebaseService = {
     } as Word));
   },
 
-  async addWord(userId: string, word: { english: string; uzbek: string; category?: string }): Promise<string> {
+  async addWord(userId: string, word: { english: string; uzbek: string; example?: string; exampleTranslation?: string }): Promise<string> {
     const docRef = await addDoc(getWordsCollection(userId), {
       ...word,
       status: 'new',

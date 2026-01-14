@@ -107,11 +107,29 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
                         flexDirection: 'column',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        background: 'linear-gradient(135deg, rgba(76,29,149,0.8) 0%, rgba(15,23,42,0.95) 100%)'
+                        background: 'linear-gradient(135deg, rgba(76,29,149,0.8) 0%, rgba(15,23,42,0.95) 100%)',
+                        padding: '2rem'
                     }}
                 >
-                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '1rem', letterSpacing: '2px' }}>Tarjimasi</span>
-                    <h2 style={{ fontSize: '2.5rem', fontWeight: 700, margin: 0, color: '#e2e8f0' }}>{word.uzbek}</h2>
+                    <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', marginBottom: '0.5rem', letterSpacing: '2px' }}>Tarjimasi</span>
+                    <h2 style={{ fontSize: '2.5rem', fontWeight: 700, margin: 0, color: '#e2e8f0', textAlign: 'center' }}>{word.uzbek}</h2>
+
+                    {word.example && (
+                        <div style={{
+                            marginTop: '2rem',
+                            padding: '1rem',
+                            background: 'rgba(0,0,0,0.2)',
+                            borderRadius: '0.75rem',
+                            width: '100%',
+                            textAlign: 'center',
+                            borderLeft: '4px solid var(--accent)'
+                        }}>
+                            <p style={{ margin: 0, fontSize: '1.1rem', color: '#fff', fontStyle: 'italic' }}>"{word.example}"</p>
+                            {word.exampleTranslation && (
+                                <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.9rem', color: 'var(--text-muted)' }}>{word.exampleTranslation}</p>
+                            )}
+                        </div>
+                    )}
 
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '3rem' }}>
                         <button
@@ -131,6 +149,15 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
                     </div>
                 </div>
             </motion.div>
+            <style>{`
+                @media (max-width: 768px) {
+                    .flashcard-container { height: 350px !important; }
+                    .flashcard h2 { font-size: 2rem !important; }
+                }
+                @media (max-width: 480px) {
+                    .flashcard-container { height: 320px !important; }
+                }
+            `}</style>
         </div>
     );
 };

@@ -163,3 +163,34 @@ body {
   margin: 0 auto;
   padding: 0 1rem;
 }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  #root {
+    padding: 1rem;
+  }
+  
+  .glass-panel {
+    padding: 1.25rem;
+    border-radius: 0.75rem;
+  }
+
+  .btn {
+    padding: 0.6rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  h1 { font-size: 1.5rem !important; }
+  h2 { font-size: 1.25rem !important; }
+  h3 { font-size: 1.1rem !important; }
+}
+
+@media (max-width: 480px) {
+  #root {
+    padding: 0.5rem;
+  }
+  
+  .container {
+    padding: 0 0.5rem;
+  }
+}

@@ -13,7 +13,8 @@ interface WordManagerProps {
 export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdate, onClose }) => {
     const [newEnglish, setNewEnglish] = useState('');
     const [newUzbek, setNewUzbek] = useState('');
-    const [newCategory, setNewCategory] = useState('');
+    const [newExample, setNewExample] = useState('');
+    const [newExampleTranslation, setNewExampleTranslation] = useState('');
     const [loading, setLoading] = useState(false);
     const [syncing, setSyncing] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -22,7 +23,8 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editEnglish, setEditEnglish] = useState('');
     const [editUzbek, setEditUzbek] = useState('');
-    const [editCategory, setEditCategory] = useState('');
+    const [editExample, setEditExample] = useState('');
+    const [editExampleTranslation, setEditExampleTranslation] = useState('');
 
     const speak = (text: string) => {
         const utterance = new SpeechSynthesisUtterance(text);
@@ -32,8 +34,7 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
 
     const filteredWords = words.filter(word =>
         word.english.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        word.uzbek.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (word.category && word.category.toLowerCase().includes(searchTerm.toLowerCase()))
+        word.uzbek.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const handleAdd = async (e: React.FormEvent) => {
@@ -42,12 +43,19 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
 
         setLoading(true);
         try {
-            const id = await firebaseService.addWord(userId, { english: newEnglish, uzbek: newUzbek, category: newCategory || undefined });
-            const newWord: Word = { id, english: newEnglish, uzbek: newUzbek, status: 'new', category: newCategory || undefined };
+            const data = {
+                english: newEnglish,
+                uzbek: newUzbek,
+                example: newExample || undefined,
+                exampleTranslation: newExampleTranslation || undefined
+            };
+            const id = await firebaseService.addWord(userId, data);
+            const newWord: Word = { id, ...data, status: 'new' };
             onUpdate([...words, newWord]);
             setNewEnglish('');
             setNewUzbek('');
-            setNewCategory('');
+            setNewExample('');
+            setNewExampleTranslation('');
         } catch (err) {
             console.error(err);
             alert('Failed to add word');
@@ -70,14 +78,16 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
         setEditingId(word.id);
         setEditEnglish(word.english);
         setEditUzbek(word.uzbek);
-        setEditCategory(word.category || '');
+        setEditExample(word.example || '');
+        setEditExampleTranslation(word.exampleTranslation || '');
     };
 
     const cancelEdit = () => {
         setEditingId(null);
         setEditEnglish('');
         setEditUzbek('');
-        setEditCategory('');
+        setEditExample('');
+        setEditExampleTranslation('');
     };
 
     const saveEdit = async (word: Word) => {
@@ -85,7 +95,13 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
         const original = { ...word };
 
         // Optimistic update
-        const updatedWord = { ...word, english: editEnglish, uzbek: editUzbek, category: editCategory || undefined };
+        const updatedWord = {
+            ...word,
+            english: editEnglish,
+            uzbek: editUzbek,
+            example: editExample || undefined,
+            exampleTranslation: editExampleTranslation || undefined
+        };
         onUpdate(words.map(w => w.id === word.id ? updatedWord : w));
         setEditingId(null);
 
@@ -134,31 +150,44 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
                     <span style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>🔍</span>
                 </div>
 
-                <form onSubmit={handleAdd} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: '1rem', background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '0.5rem' }}>
-                    <input
-                        className="input-field"
-                        placeholder="Inglizcha so'z"
-                        value={newEnglish}
-                        onChange={e => setNewEnglish(e.target.value)}
-                        style={{ margin: 0 }}
-                    />
-                    <input
-                        className="input-field"
-                        placeholder="O'zbekcha tarjimasi"
-                        value={newUzbek}
-                        onChange={e => setNewUzbek(e.target.value)}
-                        style={{ margin: 0 }}
-                    />
-                    <input
-                        className="input-field"
-                        placeholder="Kategoriya (ixtiyoriy)"
-                        value={newCategory}
-                        onChange={e => setNewCategory(e.target.value)}
-                        style={{ margin: 0 }}
-                    />
-                    <button type="submit" className="btn btn-primary" disabled={loading}>
-                        {loading ? '...' : <Plus size={20} />}
-                    </button>
+                <form onSubmit={handleAdd} className="responsive-grid" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'rgba(0,0,0,0.2)', padding: '1.25rem', borderRadius: '0.75rem' }}>
+                    <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                        <input
+                            className="input-field"
+                            placeholder="Inglizcha so'z"
+                            value={newEnglish}
+                            onChange={e => setNewEnglish(e.target.value)}
+                            style={{ margin: 0 }}
+                            required
+                        />
+                        <input
+                            className="input-field"
+                            placeholder="O'zbekcha tarjimasi"
+                            value={newUzbek}
+                            onChange={e => setNewUzbek(e.target.value)}
+                            style={{ margin: 0 }}
+                            required
+                        />
+                    </div>
+                    <div className="grid-2-auto" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '0.75rem' }}>
+                        <input
+                            className="input-field"
+                            placeholder="Misol (Inglizcha gap)..."
+                            value={newExample}
+                            onChange={e => setNewExample(e.target.value)}
+                            style={{ margin: 0 }}
+                        />
+                        <input
+                            className="input-field"
+                            placeholder="Misol tarjimasi..."
+                            value={newExampleTranslation}
+                            onChange={e => setNewExampleTranslation(e.target.value)}
+                            style={{ margin: 0 }}
+                        />
+                        <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '60px', height: '3.5rem', marginTop: '0.5rem' }}>
+                            {loading ? '...' : <Plus size={24} />}
+                        </button>
+                    </div>
                 </form>
             </div>
 
@@ -169,12 +198,11 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
                         {searchTerm ? 'Hech narsa topilmadi.' : 'Hozircha so\'zlar yo\'q.'}
                     </p>
                 ) : (
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <table className="responsive-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
                             <tr style={{ textAlign: 'left', color: 'var(--text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                                 <th style={{ padding: '0.5rem' }}>Inglizcha</th>
                                 <th style={{ padding: '0.5rem' }}>O'zbekcha</th>
-                                <th style={{ padding: '0.5rem' }}>Kategoriya</th>
                                 <th style={{ padding: '0.5rem' }}>O'zlashtirish</th>
                                 <th style={{ padding: '0.5rem', textAlign: 'right' }}>Amallar</th>
                             </tr>
@@ -184,34 +212,39 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
                                 const isEditing = editingId === word.id;
                                 return (
                                     <tr key={word.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: isEditing ? 'rgba(255,255,255,0.05)' : 'transparent' }}>
-                                        <td style={{ padding: '0.5rem' }}>
+                                        <td style={{ padding: '0.75rem 0.5rem' }}>
                                             {isEditing ? (
-                                                <input className="input-field" value={editEnglish} onChange={e => setEditEnglish(e.target.value)} style={{ margin: 0, padding: '0.4rem' }} autoFocus />
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                                    <input className="input-field" value={editEnglish} onChange={e => setEditEnglish(e.target.value)} style={{ margin: 0, padding: '0.4rem' }} autoFocus />
+                                                    <input className="input-field" placeholder="Misol..." value={editExample} onChange={e => setEditExample(e.target.value)} style={{ margin: 0, padding: '0.4rem', fontSize: '0.8rem' }} />
+                                                </div>
                                             ) : (
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                    <span style={{ fontWeight: 600 }}>{word.english}</span>
-                                                    <button
-                                                        onClick={() => speak(word.english)}
-                                                        style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem' }}
-                                                        title="Eshitish"
-                                                    >
-                                                        <Volume2 size={14} />
-                                                    </button>
+                                                <div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                        <span style={{ fontWeight: 600 }}>{word.english}</span>
+                                                        <button
+                                                            onClick={() => speak(word.english)}
+                                                            style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem' }}
+                                                            title="Eshitish"
+                                                        >
+                                                            <Volume2 size={14} />
+                                                        </button>
+                                                    </div>
+                                                    {word.example && <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '0.1rem' }}>"{word.example}"</div>}
                                                 </div>
                                             )}
                                         </td>
-                                        <td style={{ padding: '0.5rem' }}>
+                                        <td style={{ padding: '0.75rem 0.5rem' }}>
                                             {isEditing ? (
-                                                <input className="input-field" value={editUzbek} onChange={e => setEditUzbek(e.target.value)} style={{ margin: 0, padding: '0.4rem' }} />
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                                                    <input className="input-field" value={editUzbek} onChange={e => setEditUzbek(e.target.value)} style={{ margin: 0, padding: '0.4rem' }} />
+                                                    <input className="input-field" placeholder="Misol tarjimasi..." value={editExampleTranslation} onChange={e => setEditExampleTranslation(e.target.value)} style={{ margin: 0, padding: '0.4rem', fontSize: '0.8rem' }} />
+                                                </div>
                                             ) : (
-                                                <span style={{ color: '#e2e8f0' }}>{word.uzbek}</span>
-                                            )}
-                                        </td>
-                                        <td style={{ padding: '0.5rem' }}>
-                                            {isEditing ? (
-                                                <input className="input-field" placeholder="Kategoriya" value={editCategory} onChange={e => setEditCategory(e.target.value)} style={{ margin: 0, padding: '0.4rem' }} />
-                                            ) : (
-                                                <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{word.category || '-'}</span>
+                                                <div>
+                                                    <div style={{ color: '#e2e8f0' }}>{word.uzbek}</div>
+                                                    {word.exampleTranslation && <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', marginTop: '0.1rem' }}>{word.exampleTranslation}</div>}
+                                                </div>
                                             )}
                                         </td>
                                         <td style={{ padding: '0.5rem' }}>
@@ -261,6 +294,16 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, onUpdat
             <style>{`
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .grid-3 { grid-template-columns: 1fr !important; }
+            .grid-2-auto { grid-template-columns: 1fr !important; }
+            .grid-2-auto button { width: 100% !important; margin-top: 0 !important; }
+            .responsive-table th:nth-child(3), 
+            .responsive-table td:nth-child(3) {
+                display: none;
+            }
+        }
       `}</style>
         </div>
     );

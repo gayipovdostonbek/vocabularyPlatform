@@ -64,14 +64,11 @@ function App() {
     }
   }, [user]);
 
-  const handleStartStudy = (category?: string) => {
-    let toLearn = words.filter(w => w.status !== 'learned');
-    if (category) {
-      toLearn = toLearn.filter(w => w.category === category);
-    }
+  const handleStartStudy = () => {
+    const toLearn = words.filter(w => w.status !== 'learned');
 
     if (toLearn.length === 0) {
-      alert("No words to learn in this category!");
+      alert("Yodlash uchun yangi so'zlar qolmagan!");
       return;
     }
 
@@ -182,7 +179,7 @@ function App() {
 
   return (
     <div className="container animate-fade-in" style={{ paddingBottom: '4rem' }}>
-      <header style={{
+      <header className="responsive-header" style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -197,8 +194,8 @@ function App() {
           <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0 }}>VocabMaster</h1>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{user.email}</span>
+        <div className="user-nav" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <span className="user-email" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{user.email}</span>
           <button
             onClick={handleLogout}
             style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#f87171', cursor: 'pointer', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
@@ -208,6 +205,20 @@ function App() {
           </button>
         </div>
       </header>
+
+      <style>{`
+        @media (max-width: 600px) {
+          .responsive-header { 
+            flex-direction: column !important; 
+            gap: 1rem !important; 
+            align-items: center !important; 
+            text-align: center !important; 
+            padding-bottom: 2rem !important;
+          }
+          .user-nav { width: 100% !important; justify-content: center !important; }
+          .user-email { display: none !important; }
+        }
+      `}</style>
 
       <main>
         {view !== 'DASHBOARD' && (

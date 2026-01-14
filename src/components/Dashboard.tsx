@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Play, Award, Settings, Flame, Sparkles, Volume2 } from 'lucide-react';
 import type { Word } from '../types';
@@ -7,7 +7,7 @@ interface DashboardProps {
     words: Word[];
     dailyGoal: number;
     streak?: number;
-    onStart: (category?: string) => void;
+    onStart: () => void;
     onReset: () => void;
     onManage: () => void;
     onOpenSettings: () => void;
@@ -16,7 +16,6 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({
     words, dailyGoal, streak = 0, onStart, onReset, onManage, onOpenSettings
 }) => {
-    const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
 
     // Kun so'zini tanlash (yodlanmaganlar orasidan)
     const wordOfTheDay = React.useMemo(() => {
@@ -39,10 +38,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     const today = new Date().toISOString().split('T')[0];
     const learnedToday = words.filter(w => w.status === 'learned' && w.learnedAt?.startsWith(today)).length;
-
     const progress = Math.min(100, Math.round((learnedToday / dailyGoal) * 100));
-
-    const categories = Array.from(new Set(words.map(w => w.category).filter(Boolean))) as string[];
 
     // Last 7 days chart data
     const last7Days = [...Array(7)].map((_, i) => {
@@ -65,7 +61,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return (
         <div className="dashboard animate-fade-in" style={{ textAlign: 'left' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+            <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
 
                 {/* Progress Card */}
                 <div className="glass-panel" style={{ padding: '2rem', position: 'relative' }}>
@@ -143,7 +139,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {/* Activity Chart */}
             <div className="glass-panel" style={{ marginTop: '2rem', padding: '2rem' }}>
                 <h3 style={{ margin: '0 0 2rem 0', fontSize: '1.1rem' }}>Oxirgi 7 kunlik faollik</h3>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '150px', gap: '0.5rem' }}>
+                <div className="chart-container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', height: '150px', gap: '0.5rem' }}>
                     {last7Days.map((data, i) => (
                         <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
                             <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}>
@@ -169,7 +165,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
             {/* Kun so'zi bo'limi */}
             {wordOfTheDay && (
-                <div className="glass-panel" style={{
+                <div className="glass-panel word-of-the-day" style={{
                     marginTop: '2rem',
                     padding: '1.5rem 2rem',
                     background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(30, 41, 59, 0.7) 100%)',
@@ -196,12 +192,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     <Volume2 size={18} />
                                 </button>
                             </div>
+                            {wordOfTheDay.example && (
+                                <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                                    "{wordOfTheDay.example}"
+                                    {wordOfTheDay.exampleTranslation && <span style={{ fontStyle: 'normal', opacity: 0.6, marginLeft: '0.5rem' }}>— {wordOfTheDay.exampleTranslation}</span>}
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    <div style={{ textAlign: 'right' }}>
+                    <div style={{ textAlign: 'center' }}>
                         <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginBottom: '0.4rem' }}>O'zlashtirish darajasi</div>
-                        <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                        <div className="mastery-dots" style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
                             {[0, 1, 2, 3].map(lvl => (
                                 <div
                                     key={lvl}
@@ -221,28 +223,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {/* Quick Start Sections */}
             <div style={{ marginTop: '3rem' }}>
                 <h3 style={{ marginBottom: '1.5rem' }}>O'rganishni boshlash</h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
-                    <button
-                        className={`btn ${selectedCategory === undefined ? 'btn-primary' : 'btn-secondary'}`}
-                        onClick={() => setSelectedCategory(undefined)}
-                        style={{ fontSize: '0.9rem', padding: '0.6rem 1.25rem' }}
-                    >
-                        Barcha so'zlar
-                    </button>
-                    {categories.map(cat => (
-                        <button
-                            key={cat}
-                            className={`btn ${selectedCategory === cat ? 'btn-primary' : 'btn-secondary'}`}
-                            onClick={() => setSelectedCategory(cat)}
-                            style={{ fontSize: '0.9rem', padding: '0.6rem 1.25rem' }}
-                        >
-                            {cat}
-                        </button>
-                    ))}
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
-                    <button className="btn btn-primary" onClick={() => onStart(selectedCategory)} style={{ height: '4rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+                    <button className="btn btn-primary" onClick={() => onStart()} style={{ height: '4rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}>
                         <Play fill="white" size={20} /> Mashqni boshlash
                     </button>
                     <button className="btn btn-secondary" onClick={onManage} style={{ height: '4rem' }}>
@@ -253,6 +235,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </button>
                 </div>
             </div>
+            <style>{`
+                @media (max-width: 768px) {
+                    .dashboard-grid { grid-template-columns: 1fr !important; gap: 1rem !important; }
+                    .chart-container { height: 120px !important; }
+                    .word-of-the-day { flex-direction: column !important; text-align: center !important; gap: 1rem !important; }
+                    .word-of-the-day > div { flex-direction: column !important; gap: 0.5rem !important; }
+                    .word-of-the-day .mastery-dots { justify-content: center !important; }
+                }
+            `}</style>
         </div>
     );
 };
