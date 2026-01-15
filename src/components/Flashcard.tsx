@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Repeat, CheckCircle, Volume2 } from 'lucide-react';
 import type { Word } from '../types';
+import { soundService } from '../api/soundService';
 import confetti from 'canvas-confetti';
 
 interface FlashcardProps {
@@ -14,12 +15,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
 
     const handleFlip = () => setIsFlipped(!isFlipped);
 
-    const speak = (text: string) => {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.9;
-        window.speechSynthesis.speak(utterance);
-    };
+
 
     const handleKnown = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -69,7 +65,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
                 >
                     <div style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
                         <button
-                            onClick={(e) => { e.stopPropagation(); speak(word.english); }}
+                            onClick={(e) => { e.stopPropagation(); soundService.speak(word.english); }}
                             style={{ background: 'transparent', border: 'none', color: 'var(--accent)', cursor: 'pointer', padding: '0.5rem' }}
                             title="Listen"
                         >
@@ -127,7 +123,7 @@ export const Flashcard: React.FC<FlashcardProps> = ({ word, onResult }) => {
                             position: 'relative'
                         }}>
                             <button
-                                onClick={(e) => { e.stopPropagation(); speak(word.example!); }}
+                                onClick={(e) => { e.stopPropagation(); soundService.speak(word.example!); }}
                                 style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}
                                 title="Gapni eshitish"
                             >

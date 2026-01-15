@@ -213,46 +213,95 @@ function App() {
 
   return (
     <div className="container animate-fade-in" style={{ paddingBottom: '4rem' }}>
-      <header className="responsive-header" style={{
+      <header className="glass-panel responsive-header" style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '1.5rem 0',
+        padding: '1rem 2rem',
         marginBottom: '2rem',
-        borderBottom: '1px solid var(--border-color)'
+        borderRadius: '1.5rem',
+        background: 'var(--glass-bg)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid var(--border-color)',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ width: '32px', height: '32px', background: 'var(--accent)', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <CheckCircle size={18} color="white" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)',
+            borderRadius: '12px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            boxShadow: '0 4px 10px var(--accent-glow)'
+          }}>
+            <CheckCircle size={22} color="white" strokeWidth={2.5} />
           </div>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, color: 'var(--text-main)' }}>VocabMaster</h1>
+          <div>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, background: 'var(--title-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.5px' }}>VocabMaster</h1>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500, letterSpacing: '0.5px' }}>LEARN & MASTER</div>
+          </div>
         </div>
 
         <div className="user-nav" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span className="user-email" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{user.email}</span>
+          {user.email && (
+            <div style={{
+              padding: '0.5rem 1rem',
+              background: 'var(--subtle-bg)',
+              borderRadius: '2rem',
+              fontSize: '0.85rem',
+              color: 'var(--text-main)',
+              border: '1px solid var(--border-color)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)' }} />
+              {user.email.split('@')[0]}
+            </div>
+          )}
+
           <button
             onClick={() => setIsDarkMode(!isDarkMode)}
             style={{
               background: 'var(--subtle-bg)',
-              border: 'none',
+              border: '1px solid var(--border-color)',
               color: 'var(--text-main)',
               cursor: 'pointer',
-              padding: '0.5rem',
-              borderRadius: '0.5rem',
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              transition: 'all 0.2s'
             }}
+            className="interactable"
             title={isDarkMode ? "Light mode" : "Dark mode"}
           >
-            {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
           </button>
+
           <button
             onClick={handleLogout}
-            style={{ background: 'var(--subtle-bg)', border: 'none', color: '#f87171', cursor: 'pointer', padding: '0.5rem 0.75rem', borderRadius: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+            style={{
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              color: 'var(--error)',
+              cursor: 'pointer',
+              width: '40px',
+              height: '40px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s'
+            }}
+            className="interactable"
             title="Chiqish"
           >
-            <LogOut size={16} /> <span style={{ fontSize: '0.85rem' }}>Chiqish</span>
+            <LogOut size={20} />
           </button>
         </div>
       </header>
@@ -261,12 +310,16 @@ function App() {
         @media (max-width: 600px) {
           .responsive-header { 
             flex-direction: column !important; 
-            gap: 1rem !important; 
+            gap: 1.5rem !important; 
             align-items: center !important; 
             text-align: center !important; 
-            padding-bottom: 2rem !important;
+            padding-bottom: 1.5rem !important;
           }
-          .user-nav { width: 100% !important; justify-content: center !important; }
+          .user-nav { 
+            width: 100% !important; 
+            justify-content: center !important; 
+            flex-wrap: wrap;
+          }
           .user-email { display: none !important; }
         }
       `}</style>

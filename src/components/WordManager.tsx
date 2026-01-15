@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import type { Word } from '../types';
 import { firebaseService } from '../api/firebaseService';
-import { Plus, Trash2, X, RefreshCw, Pencil, Check, XCircle, Volume2 } from 'lucide-react';
+import { soundService } from '../api/soundService';
+import { Plus, Trash2, X, RefreshCw, Pencil, Check, XCircle, Volume2, Wand2, Globe, BookOpen, Tag, Languages, Search } from 'lucide-react';
+import { dictionaryService } from '../api/dictionaryService';
 
 interface WordManagerProps {
     userId: string;
@@ -17,9 +19,21 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
     const [newExample, setNewExample] = useState('');
     const [newExampleTranslation, setNewExampleTranslation] = useState('');
     const [loading, setLoading] = useState(false);
+    const [autoFilling, setAutoFilling] = useState(false);
     const [syncing, setSyncing] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'learning' | 'learned'>(initialFilter);
+
+    // Category System
+    const [category, setCategory] = useState('');
+    const [lastCategory, setLastCategory] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('all');
+
+    // Derive available categories from words
+    const availableCategories = React.useMemo(() => {
+        const cats = new Set(words.map(w => w.category).filter(Boolean));
+        return Array.from(cats).sort();
+    }, [words]);
 
     // Editing State
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -27,22 +41,21 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
     const [editUzbek, setEditUzbek] = useState('');
     const [editExample, setEditExample] = useState('');
     const [editExampleTranslation, setEditExampleTranslation] = useState('');
+    const [editCategory, setEditCategory] = useState('');
 
     // Delete confirmation state
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
 
-    const speak = (text: string) => {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.9;
-        window.speechSynthesis.speak(utterance);
-    };
+
 
     const filteredWords = words.filter(word => {
         const matchesSearch = word.english.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            word.uzbek.toLowerCase().includes(searchTerm.toLowerCase());
+            word.uzbek.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (word.category && word.category.toLowerCase().includes(searchTerm.toLowerCase()));
         const matchesStatus = statusFilter === 'all' || word.status === statusFilter;
-        return matchesSearch && matchesStatus;
+        const matchesCategory = categoryFilter === 'all' || word.category === categoryFilter;
+
+        return matchesSearch && matchesStatus && matchesCategory;
     });
 
     const handleAdd = async (e: React.FormEvent) => {
@@ -55,15 +68,26 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                 english: newEnglish,
                 uzbek: newUzbek,
                 example: newExample || undefined,
-                exampleTranslation: newExampleTranslation || undefined
+                exampleTranslation: newExampleTranslation || undefined,
+                category: category || lastCategory || undefined
             };
             const id = await firebaseService.addWord(userId, data);
+
+            // Smart Memory: Remember last used category if it was set
+            if (category) {
+                setLastCategory(category);
+            }
             const newWord: Word = { id, ...data, status: 'new' };
             onUpdate([...words, newWord]);
             setNewEnglish('');
             setNewUzbek('');
             setNewExample('');
             setNewExampleTranslation('');
+            // Don't clear category completely, keep it for next input (Smart Memory)
+            // But we might want to clear the visual input if we want to show it's "ready for new"
+            // For now, let's keep it populated to be explicit
+            setCategory(category || lastCategory || '');
+
         } catch (err) {
             console.error(err);
             alert('Failed to add word');
@@ -93,6 +117,7 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
         setEditUzbek(word.uzbek);
         setEditExample(word.example || '');
         setEditExampleTranslation(word.exampleTranslation || '');
+        setEditCategory(word.category || '');
     };
 
     const cancelEdit = () => {
@@ -101,6 +126,7 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
         setEditUzbek('');
         setEditExample('');
         setEditExampleTranslation('');
+        setEditCategory('');
     };
 
     const saveEdit = async (word: Word) => {
@@ -113,7 +139,8 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
             english: editEnglish,
             uzbek: editUzbek,
             example: editExample || undefined,
-            exampleTranslation: editExampleTranslation || undefined
+            exampleTranslation: editExampleTranslation || undefined,
+            category: editCategory || undefined
         };
         onUpdate(words.map(w => w.id === word.id ? updatedWord : w));
         setEditingId(null);
@@ -138,6 +165,24 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
         }
     };
 
+    const handleAutoFill = async () => {
+        if (!newEnglish) return;
+
+        setAutoFilling(true);
+        try {
+            const result = await dictionaryService.lookupWord(newEnglish);
+
+            if (result.translation) setNewUzbek(result.translation);
+            if (result.example) setNewExample(result.example);
+            if (result.exampleTranslation) setNewExampleTranslation(result.exampleTranslation);
+
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setAutoFilling(false);
+        }
+    };
+
     return (
         <div className="glass-panel" style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', textAlign: 'left' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -151,8 +196,9 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
             </div>
 
             {/* Filter Tabs and Search */}
+            {/* Filter Tabs and Search */}
             <div style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <div style={{ display: 'flex', background: 'var(--subtle-bg)', padding: '0.3rem', borderRadius: '0.75rem', gap: '0.2rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                     {[
                         { id: 'all', label: 'Barchasi', count: words.length },
                         { id: 'learning', label: 'Yodlanayotgan', count: words.filter(w => w.status === 'learning' || w.status === 'new').length },
@@ -161,28 +207,14 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                         <button
                             key={tab.id}
                             onClick={() => setStatusFilter(tab.id as any)}
-                            style={{
-                                flex: 1,
-                                padding: '0.6rem',
-                                border: 'none',
-                                borderRadius: '0.6rem',
-                                background: statusFilter === tab.id ? 'var(--accent)' : 'transparent',
-                                color: statusFilter === tab.id ? 'white' : 'var(--text-muted)',
-                                fontSize: '0.85rem',
-                                fontWeight: 600,
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '0.5rem'
-                            }}
+                            className={`filter-pill ${statusFilter === tab.id ? 'active' : ''}`}
                         >
                             {tab.label}
                             <span style={{
                                 opacity: 0.7,
                                 fontSize: '0.75rem',
-                                background: statusFilter === tab.id ? 'rgba(255,255,255,0.2)' : 'var(--border-color)',
+                                marginLeft: '0.5rem',
+                                background: 'rgba(255,255,255,0.15)',
                                 padding: '0.1rem 0.4rem',
                                 borderRadius: '1rem'
                             }}>{tab.count}</span>
@@ -190,54 +222,128 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                     ))}
                 </div>
 
-                <div style={{ position: 'relative' }}>
+                <div className="input-group">
+                    <Search size={18} />
                     <input
-                        className="input-field"
+                        className="modern-input"
                         placeholder="So'zlarni qidirish..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        style={{ margin: 0, paddingLeft: '2.75rem' }}
                     />
-                    <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '1rem' }}>🔍</span>
                 </div>
 
-                <form onSubmit={handleAdd} className="responsive-grid" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--subtle-bg)', padding: '1.25rem', borderRadius: '0.75rem' }}>
-                    <div className="grid-3" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                        <input
-                            className="input-field"
-                            placeholder="Inglizcha so'z"
-                            value={newEnglish}
-                            onChange={e => setNewEnglish(e.target.value)}
-                            style={{ margin: 0 }}
-                            required
-                        />
-                        <input
-                            className="input-field"
-                            placeholder="O'zbekcha tarjimasi"
-                            value={newUzbek}
-                            onChange={e => setNewUzbek(e.target.value)}
-                            style={{ margin: 0 }}
-                            required
-                        />
-                    </div>
-                    <div className="grid-2-auto" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '0.75rem' }}>
-                        <input
-                            className="input-field"
-                            placeholder="Misol (Inglizcha gap)..."
-                            value={newExample}
-                            onChange={e => setNewExample(e.target.value)}
-                            style={{ margin: 0 }}
-                        />
-                        <input
-                            className="input-field"
-                            placeholder="Misol tarjimasi..."
-                            value={newExampleTranslation}
-                            onChange={e => setNewExampleTranslation(e.target.value)}
-                            style={{ margin: 0 }}
-                        />
-                        <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '60px', height: '3.5rem', marginTop: '0.5rem' }}>
-                            {loading ? '...' : <Plus size={24} />}
+                {/* Category Filter */}
+                {availableCategories.length > 0 && (
+                    <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+                        <button
+                            onClick={() => setCategoryFilter('all')}
+                            className={`filter-pill ${categoryFilter === 'all' ? 'active' : ''}`}
+                            style={{ fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}
+                        >
+                            Barcha mavzular
                         </button>
+                        {availableCategories.map(cat => (
+                            <button
+                                key={cat}
+                                onClick={() => setCategoryFilter(cat)}
+                                className={`filter-pill ${categoryFilter === cat ? 'active' : ''}`}
+                                style={{ fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}
+                            >
+                                {cat}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                <form onSubmit={handleAdd} className="glass-panel" style={{ padding: '1.5rem', border: '1px solid var(--accent-glow)' }}>
+                    <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                        {/* Left Column */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                            <div className="input-group">
+                                <Globe size={18} style={{ color: '#3b82f6' }} />
+                                <input
+                                    className="modern-input"
+                                    placeholder="Inglizcha so'z"
+                                    value={newEnglish}
+                                    onChange={e => setNewEnglish(e.target.value)}
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleAutoFill}
+                                    disabled={autoFilling || !newEnglish}
+                                    style={{
+                                        background: 'transparent',
+                                        border: 'none',
+                                        color: 'var(--accent)',
+                                        cursor: 'pointer',
+                                        padding: '0.2rem',
+                                        opacity: autoFilling || !newEnglish ? 0.5 : 1
+                                    }}
+                                    title="Auto-fill"
+                                >
+                                    <Wand2 size={18} className={autoFilling ? 'spin' : ''} />
+                                </button>
+                            </div>
+
+                            <div className="input-group">
+                                <Globe size={18} style={{ color: '#10b981' }} />
+                                <input
+                                    className="modern-input"
+                                    placeholder="O'zbekcha tarjimasi"
+                                    value={newUzbek}
+                                    onChange={e => setNewUzbek(e.target.value)}
+                                    required
+                                />
+                            </div>
+
+                            <div className="input-group">
+                                <Tag size={18} />
+                                <input
+                                    className="modern-input"
+                                    placeholder="Mavzu (Category)..."
+                                    value={category}
+                                    onChange={e => setCategory(e.target.value)}
+                                    list="category-suggestions"
+                                />
+                                <datalist id="category-suggestions">
+                                    {availableCategories.map(cat => (
+                                        <option key={cat} value={cat} />
+                                    ))}
+                                    <option value="Sayohat" />
+                                    <option value="Ish" />
+                                    <option value="Oziq-ovqat" />
+                                    <option value="IT" />
+                                </datalist>
+                            </div>
+                        </div>
+
+                        {/* Right Column */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                            <div className="input-group">
+                                <BookOpen size={18} />
+                                <input
+                                    className="modern-input"
+                                    placeholder="Misol (Inglizcha gap)..."
+                                    value={newExample}
+                                    onChange={e => setNewExample(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="input-group">
+                                <Languages size={18} />
+                                <input
+                                    className="modern-input"
+                                    placeholder="Misol tarjimasi..."
+                                    value={newExampleTranslation}
+                                    onChange={e => setNewExampleTranslation(e.target.value)}
+                                />
+                            </div>
+
+                            <button type="submit" className="btn btn-primary" disabled={loading} style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', alignItems: 'center', width: '100%', marginBottom: '0.5rem' }}>
+                                {loading ? 'Saqlanmoqda...' : <><Plus size={20} /> Qo'shish</>}
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -267,14 +373,17 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                                             {isEditing ? (
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                                                     <input className="input-field" value={editEnglish} onChange={e => setEditEnglish(e.target.value)} style={{ margin: 0, padding: '0.4rem' }} autoFocus />
-                                                    <input className="input-field" placeholder="Misol..." value={editExample} onChange={e => setEditExample(e.target.value)} style={{ margin: 0, padding: '0.4rem', fontSize: '0.8rem' }} />
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                                                        <input className="input-field" placeholder="Misol..." value={editExample} onChange={e => setEditExample(e.target.value)} style={{ margin: 0, padding: '0.4rem', fontSize: '0.8rem' }} />
+                                                        <input className="input-field" placeholder="Mavzu..." value={editCategory} onChange={e => setEditCategory(e.target.value)} list="category-suggestions" style={{ margin: 0, padding: '0.4rem', fontSize: '0.8rem' }} />
+                                                    </div>
                                                 </div>
                                             ) : (
                                                 <div>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                         <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{word.english}</span>
                                                         <button
-                                                            onClick={() => speak(word.english)}
+                                                            onClick={() => soundService.speak(word.english)}
                                                             style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.2rem', opacity: 0.7 }}
                                                             title="Eshitish"
                                                         >
@@ -285,13 +394,26 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic', marginTop: '0.1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                                                             <span>"{word.example}"</span>
                                                             <button
-                                                                onClick={() => speak(word.example!)}
+                                                                onClick={() => soundService.speak(word.example!)}
                                                                 style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '0.1rem', display: 'flex', alignItems: 'center', opacity: 0.5 }}
                                                                 title="Gapni eshitish"
                                                             >
                                                                 <Volume2 size={12} />
                                                             </button>
                                                         </div>
+                                                    )}
+                                                    {word.category && (
+                                                        <span style={{
+                                                            fontSize: '0.7rem',
+                                                            background: 'var(--subtle-bg)',
+                                                            padding: '0.1rem 0.4rem',
+                                                            borderRadius: '4px',
+                                                            marginTop: '0.3rem',
+                                                            display: 'inline-block',
+                                                            color: 'var(--accent)'
+                                                        }}>
+                                                            {word.category}
+                                                        </span>
                                                     )}
                                                 </div>
                                             )}
@@ -393,12 +515,35 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr !important; gap: 0.5rem !important; }
             .grid-3 { grid-template-columns: 1fr !important; }
             .grid-2-auto { grid-template-columns: 1fr !important; }
             .grid-2-auto button { width: 100% !important; margin-top: 0 !important; }
-            .responsive-table th:nth-child(3), 
-            .responsive-table td:nth-child(3) {
-                display: none;
+            
+            /* Mobile Card View for Table */
+            .responsive-table thead { display: none; }
+            .responsive-table, .responsive-table tbody, .responsive-table tr, .responsive-table td {
+                display: block;
+                width: 100%;
+            }
+            .responsive-table tr {
+                background: var(--subtle-bg);
+                margin-bottom: 1rem;
+                border-radius: 0.75rem;
+                padding: 1rem;
+                border: 1px solid var(--border-color);
+            }
+            .responsive-table td {
+                padding: 0.5rem 0 !important;
+                text-align: left !important;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+            .responsive-table td:last-child {
+                border-bottom: none;
+                padding-top: 1rem !important;
+                display: flex;
+                justify-content: flex-end;
+                gap: 0.75rem;
             }
         }
       `}</style>

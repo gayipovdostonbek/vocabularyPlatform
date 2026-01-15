@@ -208,18 +208,27 @@ body {
   }
   
   .glass-panel {
-    padding: 1.25rem;
+    padding: 1rem;
     border-radius: 0.75rem;
   }
 
   .btn {
-    padding: 0.6rem 1.25rem;
+    padding: 0.6rem 1rem;
     font-size: 0.9rem;
+    min-height: 44px; /* Touch target size */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   h1 { font-size: 1.5rem !important; }
   h2 { font-size: 1.25rem !important; }
   h3 { font-size: 1.1rem !important; }
+  
+  .input-field {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 0.8rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -230,4 +239,85 @@ body {
   .container {
     padding: 0 0.5rem;
   }
+  
+  .glass-panel {
+    padding: 1rem;
+  }
+  .glass-panel {
+    padding: 1rem;
+  }
+}
+
+/* Modern Input Styles */
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 0 0.75rem;
+  transition: all 0.3s ease;
+  margin-bottom: 0.5rem;
+}
+
+.input-group:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+  transform: translateY(-1px);
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.input-group svg {
+  color: var(--text-muted);
+  min-width: 20px;
+  transition: color 0.3s;
+}
+
+.input-group:focus-within svg {
+  color: var(--accent);
+}
+
+.modern-input {
+  background: transparent;
+  border: none;
+  width: 100%;
+  padding: 0.8rem 0.5rem;
+  color: var(--text-main);
+  outline: none;
+  font-size: 1rem;
+}
+
+.modern-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+/* Filter Pill Styles */
+.filter-pill {
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.filter-pill.active {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.filter-pill:not(.active) {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border-color);
+}
+
+.filter-pill:not(.active):hover {
+  border-color: var(--text-muted);
+  color: var(--text-main);
+  background: var(--subtle-bg);
 }

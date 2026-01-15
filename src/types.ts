@@ -8,6 +8,7 @@ export interface Word {
   lastReviewedAt?: string;
   example?: string;
   exampleTranslation?: string;
+  category?: string;
 }
 
 export interface AppState {
