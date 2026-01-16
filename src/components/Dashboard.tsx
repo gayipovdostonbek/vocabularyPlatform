@@ -1,25 +1,47 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Award, Settings, Flame, Sparkles, Volume2, Keyboard, TrendingUp, Zap, Calendar, Check, Trash2 } from 'lucide-react';
+import { Play, Award, Settings, Flame, Sparkles, Volume2, Keyboard, TrendingUp, Zap, Calendar, Check, Trash2, Mic, BookOpen, Tag, ShoppingBag, Coins } from 'lucide-react';
 import type { Word } from '../types';
 import { soundService } from '../api/soundService';
+import { DeckModeSelector } from './DeckModeSelector';
+
+import { gamificationService } from '../utils/gamificationService';
+import type { UserProfile } from '../types';
 
 interface DashboardProps {
+    userProfile: UserProfile;
     words: Word[];
     dailyGoal: number;
     streak?: number;
-    onStart: (mode: 'flashcard' | 'quiz' | 'spelling') => void;
+    onStart: (mode: 'flashcard' | 'quiz' | 'spelling' | 'speaking', category?: string) => void;
     onReset: () => void;
     onManage: (filter?: 'all' | 'learning' | 'learned') => void;
     onOpenSettings: () => void;
+    onOpenShop: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
-    words, dailyGoal, streak = 0, onStart, onReset, onManage, onOpenSettings
+    userProfile, words, dailyGoal, streak = 0, onStart, onReset, onManage, onOpenSettings, onOpenShop
 }) => {
 
+    const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
     const [showResetConfirm, setShowResetConfirm] = React.useState(false);
+
+    // Gamification Stats
+    const levelInfo = React.useMemo(() => gamificationService.getLevel(userProfile.xp), [userProfile.xp]);
+
+    // Calculate Decks
+    const deckStats = React.useMemo(() => {
+        const categories = new Set(words.map(w => w.category).filter(Boolean));
+        return Array.from(categories).map(cat => {
+            const catWords = words.filter(w => w.category === cat);
+            const total = catWords.length;
+            const learned = catWords.filter(w => w.status === 'learned').length;
+            const percentage = Math.round((learned / total) * 100);
+            return { name: cat!, total, learned, percentage };
+        }).sort((a, b) => b.total - a.total); // Sort by size
+    }, [words]);
 
     // Kun so'zini tanlash
     const wordOfTheDay = React.useMemo(() => {
@@ -147,37 +169,120 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         </div>
                     </div>
 
-                    {/* Stats & Streak */}
-                    <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: '1rem' }}>
-                        {/* Streak */}
-                        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, var(--glass-bg) 100%)' }}>
-                            <div>
-                                <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.2rem' }}>Streak</div>
-                                <div style={{ fontSize: '1.8rem', fontWeight: 800 }}>{streak} <span style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text-muted)' }}>kun</span></div>
-                            </div>
-                            <div style={{ background: 'rgba(245, 158, 11, 0.2)', padding: '0.8rem', borderRadius: '1rem', color: '#fbbf24', boxShadow: '0 0 20px rgba(245, 158, 11, 0.2)' }}>
-                                <Flame size={28} className={streak > 0 ? 'animate-bounce' : ''} fill={streak > 0 ? 'currentColor' : 'none'} />
-                            </div>
+                    {/* Word Statistics Card - FIRST */}
+                    <div className="glass-panel" onClick={() => onManage()} style={{ padding: '2rem', cursor: 'pointer', transition: 'all 0.3s', border: '1px solid transparent', position: 'relative', overflow: 'hidden' }}
+                        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+                        onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}>
+                        <div style={{ position: 'absolute', top: 0, right: 0, padding: '1.5rem', opacity: 0.1 }}>
+                            <BookOpen size={120} />
                         </div>
 
-                        {/* Total Words */}
-                        <div className="glass-panel" onClick={() => onManage()} style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'all 0.2s', border: '1px solid transparent' }}
-                            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-                            onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}>
-                            <div>
-                                <div style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '0.2rem' }}>Jami so'zlar</div>
-                                <div style={{ fontSize: '1.8rem', fontWeight: 800 }}>{total}</div>
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                <BookOpen size={16} className="text-secondary" />
+                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Jami so'zlar</span>
                             </div>
-                            <div style={{ display: 'flex', gap: '2rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
+                                <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-1px' }}>{total}</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: '2rem', marginTop: '1rem' }}>
                                 <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--success)' }}>Yodlangan</div>
-                                    <div style={{ fontWeight: 700 }}>{learned}</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--success)', marginBottom: '0.25rem' }}>Yodlangan</div>
+                                    <div style={{ fontWeight: 700, fontSize: '1.5rem' }}>{learned}</div>
                                 </div>
                                 <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>O'rganilmoqda</div>
-                                    <div style={{ fontWeight: 700 }}>{learning}</div>
+                                    <div style={{ fontSize: '0.75rem', color: '#3b82f6', marginBottom: '0.25rem' }}>O'rganilmoqda</div>
+                                    <div style={{ fontWeight: 700, fontSize: '1.5rem' }}>{learning}</div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Level Card */}
+                    <div className="glass-panel" style={{ padding: '2rem', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: 0, right: 0, padding: '1.5rem', opacity: 0.1 }}>
+                            <Award size={120} />
+                        </div>
+
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                <Award size={16} className="text-secondary" />
+                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Daraja</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
+                                <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-1px' }}>{levelInfo.current.level}</span>
+                                <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>/ 10</span>
+                            </div>
+                            <div style={{ fontSize: '0.9rem', color: 'var(--accent)', fontWeight: 600 }}>{levelInfo.current.title}</div>
+                            <div style={{ marginTop: '1rem', background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${levelInfo.progress}%` }}
+                                    transition={{ duration: 1, ease: 'easeOut' }}
+                                    style={{ height: '100%', background: 'var(--accent)', boxShadow: '0 0 10px var(--accent-glow)' }}
+                                />
+                            </div>
+                            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                {userProfile.xp} / {levelInfo.next.minXP} XP
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Streak Card */}
+                    <div className="glass-panel" style={{ padding: '2rem', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: 0, right: 0, padding: '1.5rem', opacity: 0.1 }}>
+                            <Flame size={120} />
+                        </div>
+
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                <Flame size={16} className="text-secondary" />
+                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Streak</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
+                                <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-1px' }}>{streak}</span>
+                                <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>kun</span>
+                            </div>
+                            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                                {streak > 0 ? `Ajoyib! ${streak} kun ketma-ket mashq qildingiz!` : 'Bugun mashq qiling va streak boshlang!'}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Coins Card */}
+                    <div className="glass-panel" style={{ padding: '2rem', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', top: 0, right: 0, padding: '1.5rem', opacity: 0.1 }}>
+                            <Coins size={120} />
+                        </div>
+
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                                <Coins size={16} className="text-secondary" />
+                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Tangalar</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
+                                <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-1px' }}>{userProfile.coins}</span>
+                            </div>
+                            <button
+                                onClick={onOpenShop}
+                                className="btn"
+                                style={{
+                                    width: '100%',
+                                    background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)',
+                                    border: 'none',
+                                    color: 'white',
+                                    padding: '0.75rem',
+                                    borderRadius: '0.5rem',
+                                    cursor: 'pointer',
+                                    fontWeight: 600,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.5rem'
+                                }}
+                            >
+                                <ShoppingBag size={18} /> Do'kon
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -285,6 +390,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>Yozma Mashq</h4>
                             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Eshitish va to'g'ri yozishni mashq qilish.</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#3b82f6', fontWeight: 600, fontSize: '0.9rem' }}>
+                                Boshlash <TrendingUp size={16} />
+                            </div>
+                        </div>
+
+                        {/* Speaking Practice */}
+                        <div className="glass-panel mode-card interactable" onClick={() => onStart('speaking')} style={{ padding: '2rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s ease' }}>
+                            <div style={{ marginBottom: '1.5rem', background: 'rgba(236, 72, 153, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
+                                <Mic size={32} style={{ color: '#ec4899' }} />
+                            </div>
+                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>Talaffuz Mashqi</h4>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>So'zlarni to'g'ri talaffuz qilishni mashq qiling.</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ec4899', fontWeight: 600, fontSize: '0.9rem' }}>
                                 Boshlash <TrendingUp size={16} />
                             </div>
                         </div>

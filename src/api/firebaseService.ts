@@ -56,7 +56,7 @@ export const firebaseService = {
     await deleteDoc(wordRef);
   },
 
-  async getSettings(userId: string): Promise<{ dailyGoal: number; currentStreak: number; lastActivityDate?: string }> {
+  async getSettings(userId: string): Promise<{ dailyGoal: number; currentStreak: number; lastActivityDate?: string; xp?: number; level?: number; coins?: number; inventory?: string[]; activeTheme?: string }> {
     const userRef = doc(db, 'users', userId);
     const userSnap = await getDoc(userRef);
     
@@ -65,14 +65,56 @@ export const firebaseService = {
         return { 
             dailyGoal: data.dailyGoal || 10,
             currentStreak: data.currentStreak || 0,
-            lastActivityDate: data.lastActivityDate
+            lastActivityDate: data.lastActivityDate,
+            xp: data.xp || 0,
+            level: data.level || 1,
+            coins: data.coins || 0,
+            inventory: data.inventory || [],
+            activeTheme: data.activeTheme
         };
     }
-    return { dailyGoal: 10, currentStreak: 0 };
+    return { dailyGoal: 10, currentStreak: 0, xp: 0, level: 1, coins: 0, inventory: [] };
   },
 
-  async updateSettings(userId: string, settings: Partial<{ dailyGoal: number; currentStreak: number; lastActivityDate: string }>): Promise<void> {
+  async updateSettings(userId: string, settings: Partial<{ dailyGoal: number; currentStreak: number; lastActivityDate: string; xp: number; level: number; coins: number; inventory: string[]; activeTheme: string }>): Promise<void> {
     const userRef = doc(db, 'users', userId);
     await setDoc(userRef, cleanData(settings), { merge: true });
+  },
+
+  async updateLeaderboard(userId: string, displayName: string, xp: number, level: number, avatar?: string): Promise<void> {
+    const leaderboardRef = doc(db, 'leaderboard', userId);
+    await setDoc(leaderboardRef, cleanData({
+      displayName,
+      xp,
+      level,
+      avatar,
+      lastUpdated: new Date().toISOString()
+    }), { merge: true });
+  },
+
+  async getLeaderboard(limit: number = 50): Promise<any[]> {
+    const leaderboardCollection = collection(db, 'leaderboard');
+    const q = query(leaderboardCollection);
+    const querySnapshot = await getDocs(q);
+    
+    const entries = querySnapshot.docs.map(doc => ({
+      userId: doc.id,
+      ...doc.data()
+    }));
+
+    // Sort by XP descending
+    entries.sort((a, b) => (b.xp || 0) - (a.xp || 0));
+    
+    // Add rank and limit
+    return entries.slice(0, limit).map((entry, index) => ({
+      ...entry,
+      rank: index + 1
+    }));
+  },
+
+  async getUserRank(userId: string): Promise<number> {
+    const leaderboard = await this.getLeaderboard(1000); // Get more entries to find user
+    const userEntry = leaderboard.find(entry => entry.userId === userId);
+    return userEntry ? userEntry.rank : -1;
   }
 };

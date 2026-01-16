@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Dashboard } from './components/Dashboard';
 import { Flashcard } from './components/Flashcard';
 import { WordManager } from './components/WordManager';
+import { ShopModal } from './components/ShopModal';
 import { firebaseService } from './api/firebaseService';
 import { authService } from './api/authService';
 import { Auth } from './components/Auth';
@@ -10,19 +11,32 @@ import { ArrowLeft, LogOut, CheckCircle, Sun, Moon } from 'lucide-react';
 import type { User } from 'firebase/auth';
 import confetti from 'canvas-confetti';
 import { soundService } from './api/soundService';
+import { srsService } from './api/srsService';
+import { gamificationService } from './utils/gamificationService';
+import type { UserProfile } from './types';
 
 import { Quiz } from './components/Quiz';
 import { SpellingQuiz } from './components/SpellingQuiz';
+import { ReloadPrompt } from './components/ReloadPrompt';
+
+import { SpeakingQuiz } from './components/SpeakingQuiz';
 
 type ViewMode = 'DASHBOARD' | 'STUDY' | 'MANAGE' | 'SETTINGS';
-type StudyMode = 'flashcard' | 'quiz' | 'spelling';
+type StudyMode = 'flashcard' | 'quiz' | 'spelling' | 'speaking';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    xp: 0,
+    level: 1,
+    coins: 0,
+    inventory: []
+  });
   const [authLoading, setAuthLoading] = useState(true);
   const [words, setWords] = useState<Word[]>([]);
   const [view, setView] = useState<ViewMode>('DASHBOARD');
   const [loading, setLoading] = useState(false);
+  const [isShopOpen, setIsShopOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dailyGoal, setDailyGoal] = useState<number>(10);
   const [streak, setStreak] = useState<number>(0);
@@ -66,6 +80,14 @@ function App() {
       setDailyGoal(settings.dailyGoal);
       setStreak(settings.currentStreak);
       setLastActivity(settings.lastActivityDate);
+      setUserProfile({
+        xp: settings.xp || 0,
+        level: 1,
+        coins: settings.coins || 0,
+        inventory: settings.inventory || [],
+        activeTheme: settings.activeTheme,
+        activeAvatar: settings.activeAvatar
+      });
       setError(null);
     } catch (err: any) {
       console.error("Failed to load words:", err);
@@ -80,14 +102,57 @@ function App() {
       loadWords();
     } else {
       setWords([]);
+      setUserProfile({
+        xp: 0,
+        level: 1,
+        coins: 0,
+        inventory: []
+      });
     }
   }, [user]);
 
-  const handleStartStudy = (mode: StudyMode = 'flashcard') => {
-    const toLearn = words.filter(w => w.status !== 'learned');
+  // Apply Theme
+  useEffect(() => {
+    if (userProfile.activeTheme) {
+      // Reset previous theme classes if any (assuming simple class-based approach or attribute)
+      document.documentElement.setAttribute('data-theme', userProfile.activeTheme);
+
+      // Dynamic CSS Variable Update for specific themes if needed
+      const themeColors: Record<string, string> = {
+        'theme-ocean': '#0ea5e9',
+        'theme-forest': '#22c55e',
+        'theme-sunset': '#f59e0b',
+        'theme-cyber': '#d946ef'
+      };
+
+      if (themeColors[userProfile.activeTheme]) {
+        document.documentElement.style.setProperty('--accent', themeColors[userProfile.activeTheme]);
+        // Helper to generate a glow color - just a simple implementation
+        document.documentElement.style.setProperty('--accent-glow', `${themeColors[userProfile.activeTheme]}60`);
+      }
+    }
+  }, [userProfile.activeTheme]);
+
+  const handleStartStudy = (mode: StudyMode = 'flashcard', category?: string) => {
+    // SRS Logic: Prioritize words due for review
+    const today = new Date().toISOString();
+
+    // Filter by Category first if provided
+    let candidateWords = words;
+    if (category) {
+      candidateWords = words.filter(w => w.category === category);
+    }
+
+    const dueForReview = candidateWords.filter(w =>
+      w.status !== 'learned' &&
+      (w.nextReviewDate ? w.nextReviewDate <= today : true) // Include if due OR if never reviewed (no date)
+    );
+
+    // If no reviews due, take new/learning words
+    const toLearn = dueForReview.length > 0 ? dueForReview : candidateWords.filter(w => w.status !== 'learned');
 
     if (toLearn.length === 0) {
-      alert("Yodlash uchun yangi so'zlar qolmagan!");
+      alert("Bu bo'limda yodlash uchun so'zlar qolmagan yoki vaqti kelmagan!");
       return;
     }
 
@@ -115,17 +180,44 @@ function App() {
       soundService.playFailure();
     }
 
-    const currentMastery = word.masteryLevel || 0;
-    let nextMastery = known ? Math.min(4, currentMastery + 1) : Math.max(0, currentMastery - 1);
-    const isNowLearned = nextMastery === 4;
 
-    const updatedWord: Word = {
-      ...word,
-      masteryLevel: nextMastery,
-      status: isNowLearned ? 'learned' : 'learning',
-      lastReviewedAt: new Date().toISOString(),
-      learnedAt: isNowLearned ? new Date().toISOString() : word.learnedAt
+    // Gamification Rewards
+    const rewards = gamificationService.calculateRewards(known, streak);
+    const newXP = userProfile.xp + rewards.xp;
+    const newCoins = userProfile.coins + rewards.coins;
+
+    // Check Level Up
+    const oldLevelInfo = gamificationService.getLevel(userProfile.xp);
+    const newLevelInfo = gamificationService.getLevel(newXP);
+
+    if (newLevelInfo.current.level > oldLevelInfo.current.level) {
+      soundService.playSuccess(); // Extra sound or specific level up sound
+      confetti({
+        particleCount: 200,
+        spread: 100,
+        origin: { y: 0.6 }
+      });
+      alert(`Tabriklaymiz! Siz ${newLevelInfo.current.level}-darajaga (${newLevelInfo.current.title}) chiqdingiz!`);
+    }
+
+    const updatedProfile = {
+      ...userProfile,
+      xp: newXP,
+      coins: newCoins,
+      level: newLevelInfo.current.level
     };
+
+    setUserProfile(updatedProfile);
+    // Persist profile to Firebase (TODO: Create separate profile path or store in user settings)
+    firebaseService.updateSettings(user.uid, {
+      xp: newXP,
+      coins: newCoins,
+      level: newLevelInfo.current.level
+    });
+
+    // SRS Calculation
+    const quality = known ? 5 : 1; // Simplification: 5 for correct, 1 for incorrect
+    const updatedWord = srsService.calculateReview(word, quality);
 
     // Update local state
     setWords(words.map(w => w.id === word.id ? updatedWord : w));
@@ -212,101 +304,103 @@ function App() {
   }
 
   return (
-    <div className="container animate-fade-in" style={{ paddingBottom: '4rem' }}>
-      <header className="glass-panel responsive-header" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '1rem 2rem',
-        marginBottom: '2rem',
-        borderRadius: '1.5rem',
-        background: 'var(--glass-bg)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid var(--border-color)',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)',
-            borderRadius: '12px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            boxShadow: '0 4px 10px var(--accent-glow)'
-          }}>
-            <CheckCircle size={22} color="white" strokeWidth={2.5} />
-          </div>
-          <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, background: 'var(--title-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.5px' }}>VocabMaster</h1>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500, letterSpacing: '0.5px' }}>LEARN & MASTER</div>
-          </div>
-        </div>
-
-        <div className="user-nav" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          {user.email && (
+    <>
+      <div className="container animate-fade-in" style={{ paddingBottom: '4rem' }}>
+        <ReloadPrompt />
+        <header className="glass-panel responsive-header" style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '1rem 2rem',
+          marginBottom: '2rem',
+          borderRadius: '1.5rem',
+          background: 'var(--glass-bg)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid var(--border-color)',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{
-              padding: '0.5rem 1rem',
-              background: 'var(--subtle-bg)',
-              borderRadius: '2rem',
-              fontSize: '0.85rem',
-              color: 'var(--text-main)',
-              border: '1px solid var(--border-color)',
+              width: '40px',
+              height: '40px',
+              background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)',
+              borderRadius: '12px',
               display: 'flex',
+              justifyContent: 'center',
               alignItems: 'center',
-              gap: '0.5rem'
+              boxShadow: '0 4px 10px var(--accent-glow)'
             }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)' }} />
-              {user.email.split('@')[0]}
+              <CheckCircle size={22} color="white" strokeWidth={2.5} />
             </div>
-          )}
+            <div>
+              <h1 style={{ fontSize: '1.5rem', fontWeight: 800, margin: 0, background: 'var(--title-gradient)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', letterSpacing: '-0.5px' }}>VocabMaster</h1>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500, letterSpacing: '0.5px' }}>LEARN & MASTER</div>
+            </div>
+          </div>
 
-          <button
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            style={{
-              background: 'var(--subtle-bg)',
-              border: '1px solid var(--border-color)',
-              color: 'var(--text-main)',
-              cursor: 'pointer',
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s'
-            }}
-            className="interactable"
-            title={isDarkMode ? "Light mode" : "Dark mode"}
-          >
-            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
+          <div className="user-nav" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            {user.email && (
+              <div style={{
+                padding: '0.5rem 1rem',
+                background: 'var(--subtle-bg)',
+                borderRadius: '2rem',
+                fontSize: '0.85rem',
+                color: 'var(--text-main)',
+                border: '1px solid var(--border-color)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)' }} />
+                {user.email.split('@')[0]}
+              </div>
+            )}
 
-          <button
-            onClick={handleLogout}
-            style={{
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.2)',
-              color: 'var(--error)',
-              cursor: 'pointer',
-              width: '40px',
-              height: '40px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s'
-            }}
-            className="interactable"
-            title="Chiqish"
-          >
-            <LogOut size={20} />
-          </button>
-        </div>
-      </header>
+            <button
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              style={{
+                background: 'var(--subtle-bg)',
+                border: '1px solid var(--border-color)',
+                color: 'var(--text-main)',
+                cursor: 'pointer',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              className="interactable"
+              title={isDarkMode ? "Light mode" : "Dark mode"}
+            >
+              {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
 
-      <style>{`
+            <button
+              onClick={handleLogout}
+              style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                color: 'var(--error)',
+                cursor: 'pointer',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              className="interactable"
+              title="Chiqish"
+            >
+              <LogOut size={20} />
+            </button>
+          </div>
+        </header>
+
+        <style>{`
         @media (max-width: 600px) {
           .responsive-header { 
             flex-direction: column !important; 
@@ -324,108 +418,154 @@ function App() {
         }
       `}</style>
 
-      <main>
-        {view !== 'DASHBOARD' && (
-          <button
-            className="btn btn-secondary"
-            onClick={() => setView('DASHBOARD')}
-            style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-          >
-            <ArrowLeft size={18} /> Dashboardga qaytish
-          </button>
-        )}
+        <main>
+          {view !== 'DASHBOARD' && (
+            <button
+              className="btn btn-secondary"
+              onClick={() => setView('DASHBOARD')}
+              style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <ArrowLeft size={18} /> Dashboardga qaytish
+            </button>
+          )}
 
-        {loading && <div style={{ textAlign: 'center', padding: '2rem' }}>Ma'lumotlar sinxronizatsiya qilinmoqda...</div>}
+          {loading && <div style={{ textAlign: 'center', padding: '2rem' }}>Ma'lumotlar sinxronizatsiya qilinmoqda...</div>}
 
-        {error && (
-          <div className="glass-panel" style={{ color: 'var(--error)', padding: '1rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.2rem' }}>⚠️</span>
-            <div>
-              <strong>Xatolik:</strong> {error}
-              <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                Iltimos, <code>src/firebaseConfig.ts</code> dagi sozlamalarni tekshiring.
-              </p>
+          {error && (
+            <div className="glass-panel" style={{ color: 'var(--error)', padding: '1rem', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+              <div>
+                <strong>Xatolik:</strong> {error}
+                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  Iltimos, <code>src/firebaseConfig.ts</code> dagi sozlamalarni tekshiring.
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {view === 'DASHBOARD' && (
-          <Dashboard
-            words={words}
-            dailyGoal={dailyGoal}
-            streak={streak}
-            onStart={handleStartStudy}
-            onReset={handleReset}
-            onManage={handleManage}
-            onOpenSettings={() => setView('SETTINGS')}
+          {view === 'DASHBOARD' && (
+            <Dashboard
+              userProfile={userProfile}
+              words={words}
+              dailyGoal={dailyGoal}
+              streak={streak}
+              onStart={handleStartStudy}
+              onReset={handleReset}
+              onManage={handleManage}
+              onOpenSettings={() => setView('SETTINGS')}
+              onOpenShop={() => setIsShopOpen(true)}
+            />
+          )}
+
+          {view === 'SETTINGS' && (
+            <div className="glass-panel animate-fade-in" style={{ padding: '2rem', maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
+              <h2 style={{ marginBottom: '1.5rem' }}>Kunlik maqsad</h2>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Har kuni nechtadan yangi so'z yodlamoqchisiz?</p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '2rem' }}>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => handleUpdateGoal(Math.max(1, dailyGoal - 5))}
+                  style={{ width: '40px', height: '40px', padding: 0 }}
+                >
+                  -
+                </button>
+                <div style={{ fontSize: '2.5rem', fontWeight: 700, minWidth: '80px' }}>{dailyGoal}</div>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => handleUpdateGoal(dailyGoal + 5)}
+                  style={{ width: '40px', height: '40px', padding: 0 }}
+                >
+                  +
+                </button>
+              </div>
+              <button className="btn btn-primary" onClick={() => setView('DASHBOARD')} style={{ width: '100%' }}>Saqlash va qaytish</button>
+            </div>
+          )}
+
+          {view === 'MANAGE' && (
+            <WordManager
+              userId={user.uid}
+              words={words}
+              initialFilter={wordFilter}
+              onUpdate={(updated: Word[]) => setWords(updated)}
+              onClose={() => setView('DASHBOARD')}
+            />
+          )}
+
+          {view === 'STUDY' && studyQueue.length > 0 && (
+            <div style={{ width: '100%', maxWidth: '600px', margin: '0 auto' }}>
+              <div style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--text-muted)' }}>
+                So'z {currentIndex + 1} / {studyQueue.length}
+              </div>
+
+              {studyMode === 'flashcard' ? (
+                <Flashcard
+                  key={studyQueue[currentIndex].id}
+                  word={studyQueue[currentIndex]}
+                  onResult={handleCardResult}
+                />
+              ) : studyMode === 'quiz' ? (
+                <Quiz
+                  key={studyQueue[currentIndex].id}
+                  word={studyQueue[currentIndex]}
+                  allWords={words}
+                  onResult={handleCardResult}
+                />
+              ) : studyMode === 'speaking' ? (
+                <SpeakingQuiz
+                  key={studyQueue[currentIndex].id}
+                  word={studyQueue[currentIndex]}
+                  onResult={handleCardResult}
+                />
+              ) : (
+                <SpellingQuiz
+                  key={studyQueue[currentIndex].id}
+                  word={studyQueue[currentIndex]}
+                  onResult={handleCardResult}
+                />
+              )}
+            </div>
+          )}
+        </main>
+      </div>
+
+      {/* Shop Modal */}
+      {
+        isShopOpen && (
+          <ShopModal
+            userProfile={userProfile}
+            onClose={() => setIsShopOpen(false)}
+            onBuy={async (itemId, price) => {
+              const newCoins = userProfile.coins - price;
+              const newInventory = [...userProfile.inventory, itemId];
+              const updatedProfile = { ...userProfile, coins: newCoins, inventory: newInventory };
+
+              setUserProfile(updatedProfile);
+              soundService.playSuccess();
+
+              // Persist
+              if (user) {
+                await firebaseService.updateSettings(user.uid, {
+                  coins: newCoins,
+                  inventory: newInventory
+                });
+              }
+            }}
+            onEquip={async (itemId) => {
+              const updatedProfile = { ...userProfile, activeTheme: itemId };
+              setUserProfile(updatedProfile);
+
+              // Persist
+              if (user) {
+                await firebaseService.updateSettings(user.uid, {
+                  activeTheme: itemId
+                });
+              }
+            }}
           />
-        )}
-
-        {view === 'SETTINGS' && (
-          <div className="glass-panel animate-fade-in" style={{ padding: '2rem', maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
-            <h2 style={{ marginBottom: '1.5rem' }}>Kunlik maqsad</h2>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Har kuni nechtadan yangi so'z yodlamoqchisiz?</p>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '2rem' }}>
-              <button
-                className="btn btn-secondary"
-                onClick={() => handleUpdateGoal(Math.max(1, dailyGoal - 5))}
-                style={{ width: '40px', height: '40px', padding: 0 }}
-              >
-                -
-              </button>
-              <div style={{ fontSize: '2.5rem', fontWeight: 700, minWidth: '80px' }}>{dailyGoal}</div>
-              <button
-                className="btn btn-secondary"
-                onClick={() => handleUpdateGoal(dailyGoal + 5)}
-                style={{ width: '40px', height: '40px', padding: 0 }}
-              >
-                +
-              </button>
-            </div>
-            <button className="btn btn-primary" onClick={() => setView('DASHBOARD')} style={{ width: '100%' }}>Saqlash va qaytish</button>
-          </div>
-        )}
-
-        {view === 'MANAGE' && (
-          <WordManager
-            userId={user.uid}
-            words={words}
-            initialFilter={wordFilter}
-            onUpdate={(updated) => setWords(updated)}
-            onClose={() => setView('DASHBOARD')}
-          />
-        )}
-
-        {view === 'STUDY' && studyQueue.length > 0 && (
-          <div style={{ width: '100%', maxWidth: '600px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--text-muted)' }}>
-              So'z {currentIndex + 1} / {studyQueue.length}
-            </div>
-
-            {studyMode === 'flashcard' ? (
-              <Flashcard
-                key={studyQueue[currentIndex].id}
-                word={studyQueue[currentIndex]}
-                onResult={handleCardResult}
-              />
-            ) : studyMode === 'quiz' ? (
-              <Quiz
-                key={studyQueue[currentIndex].id}
-                word={studyQueue[currentIndex]}
-                allWords={words}
-                onResult={handleCardResult}
-              />
-            ) : (
-              <SpellingQuiz
-                key={studyQueue[currentIndex].id}
-                word={studyQueue[currentIndex]}
-                onResult={handleCardResult}
-              />
-            )}
-          </div>
-        )}
-      </main>
-    </div>
+        )
+      }
+    </>
   );
 }
 

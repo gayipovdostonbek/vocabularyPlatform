@@ -126,14 +126,13 @@ export const SpellingQuiz: React.FC<SpellingQuizProps> = ({ word, onResult }) =>
 
                         {status === 'typing' && input.trim() && (
                             <motion.button
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
+                                initial={{ opacity: 0, x: -10, y: '-50%' }}
+                                animate={{ opacity: 1, x: 0, y: '-50%' }}
                                 type="submit"
                                 style={{
                                     position: 'absolute',
                                     right: '1rem',
                                     top: '50%',
-                                    transform: 'translateY(-50%)',
                                     background: 'var(--accent)',
                                     border: 'none',
                                     borderRadius: '0.75rem',
