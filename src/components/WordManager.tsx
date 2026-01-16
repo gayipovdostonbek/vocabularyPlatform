@@ -245,7 +245,7 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                         {availableCategories.map(cat => (
                             <button
                                 key={cat}
-                                onClick={() => setCategoryFilter(cat)}
+                                onClick={() => setCategoryFilter(cat || 'all')}
                                 className={`filter-pill ${categoryFilter === cat ? 'active' : ''}`}
                                 style={{ fontSize: '0.85rem', padding: '0.4rem 0.8rem' }}
                             >

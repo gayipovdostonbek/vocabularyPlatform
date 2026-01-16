@@ -82,7 +82,7 @@ function App() {
       setLastActivity(settings.lastActivityDate);
       setUserProfile({
         xp: settings.xp || 0,
-        level: 1,
+        level: settings.level || 1,
         coins: settings.coins || 0,
         inventory: settings.inventory || [],
         activeTheme: settings.activeTheme,
@@ -535,10 +535,14 @@ function App() {
           <ShopModal
             userProfile={userProfile}
             onClose={() => setIsShopOpen(false)}
-            onBuy={async (itemId, price) => {
+            onBuy={async (itemId, price, _type) => {
               const newCoins = userProfile.coins - price;
               const newInventory = [...userProfile.inventory, itemId];
-              const updatedProfile = { ...userProfile, coins: newCoins, inventory: newInventory };
+              const updatedProfile = {
+                ...userProfile,
+                coins: newCoins,
+                inventory: newInventory
+              };
 
               setUserProfile(updatedProfile);
               soundService.playSuccess();
@@ -551,14 +555,16 @@ function App() {
                 });
               }
             }}
-            onEquip={async (itemId) => {
-              const updatedProfile = { ...userProfile, activeTheme: itemId };
+            onEquip={async (itemId, type) => {
+              const updatedProfile = type === 'theme'
+                ? { ...userProfile, activeTheme: itemId }
+                : { ...userProfile, activeAvatar: itemId };
               setUserProfile(updatedProfile);
 
               // Persist
               if (user) {
                 await firebaseService.updateSettings(user.uid, {
-                  activeTheme: itemId
+                  [type === 'theme' ? 'activeTheme' : 'activeAvatar']: itemId
                 });
               }
             }}

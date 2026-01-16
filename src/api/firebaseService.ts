@@ -56,7 +56,7 @@ export const firebaseService = {
     await deleteDoc(wordRef);
   },
 
-  async getSettings(userId: string): Promise<{ dailyGoal: number; currentStreak: number; lastActivityDate?: string; xp?: number; level?: number; coins?: number; inventory?: string[]; activeTheme?: string }> {
+  async getSettings(userId: string): Promise<{ dailyGoal: number; currentStreak: number; lastActivityDate?: string; xp?: number; level?: number; coins?: number; inventory?: string[]; activeTheme?: string; activeAvatar?: string }> {
     const userRef = doc(db, 'users', userId);
     const userSnap = await getDoc(userRef);
     
@@ -70,13 +70,14 @@ export const firebaseService = {
             level: data.level || 1,
             coins: data.coins || 0,
             inventory: data.inventory || [],
-            activeTheme: data.activeTheme
+            activeTheme: data.activeTheme,
+            activeAvatar: data.activeAvatar
         };
     }
     return { dailyGoal: 10, currentStreak: 0, xp: 0, level: 1, coins: 0, inventory: [] };
   },
 
-  async updateSettings(userId: string, settings: Partial<{ dailyGoal: number; currentStreak: number; lastActivityDate: string; xp: number; level: number; coins: number; inventory: string[]; activeTheme: string }>): Promise<void> {
+  async updateSettings(userId: string, settings: Partial<{ dailyGoal: number; currentStreak: number; lastActivityDate: string; xp: number; level: number; coins: number; inventory: string[]; activeTheme: string; activeAvatar: string }>): Promise<void> {
     const userRef = doc(db, 'users', userId);
     await setDoc(userRef, cleanData(settings), { merge: true });
   }

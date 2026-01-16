@@ -1,10 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Award, Settings, Flame, Sparkles, Volume2, Keyboard, TrendingUp, Zap, Calendar, Check, Trash2, Mic, BookOpen, Tag, ShoppingBag, Coins } from 'lucide-react';
+import { Play, Award, Settings, Flame, Sparkles, Volume2, Keyboard, TrendingUp, Zap, Calendar, Check, Trash2, Mic, BookOpen, ShoppingBag, Coins } from 'lucide-react';
 import type { Word } from '../types';
 import { soundService } from '../api/soundService';
-import { DeckModeSelector } from './DeckModeSelector';
 
 import { gamificationService } from '../utils/gamificationService';
 import type { UserProfile } from '../types';
@@ -25,23 +24,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
     userProfile, words, dailyGoal, streak = 0, onStart, onReset, onManage, onOpenSettings, onOpenShop
 }) => {
 
-    const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null);
     const [showResetConfirm, setShowResetConfirm] = React.useState(false);
 
     // Gamification Stats
     const levelInfo = React.useMemo(() => gamificationService.getLevel(userProfile.xp), [userProfile.xp]);
-
-    // Calculate Decks
-    const deckStats = React.useMemo(() => {
-        const categories = new Set(words.map(w => w.category).filter(Boolean));
-        return Array.from(categories).map(cat => {
-            const catWords = words.filter(w => w.category === cat);
-            const total = catWords.length;
-            const learned = catWords.filter(w => w.status === 'learned').length;
-            const percentage = Math.round((learned / total) * 100);
-            return { name: cat!, total, learned, percentage };
-        }).sort((a, b) => b.total - a.total); // Sort by size
-    }, [words]);
 
     // Kun so'zini tanlash
     const wordOfTheDay = React.useMemo(() => {

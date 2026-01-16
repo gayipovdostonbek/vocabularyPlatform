@@ -1,5 +1,3 @@
-import type { UserProfile } from '../types';
-
 export const LEVELS = [
     { level: 1, xp: 0, title: "Yangi boshlovchi" },
     { level: 2, xp: 100, title: "O'quvchi" },
