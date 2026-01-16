@@ -1,6 +1,6 @@
 import { db } from '../firebaseConfig';
 import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, getDoc, setDoc } from 'firebase/firestore';
-import type { Word } from '../types';
+
 
 const getWordsCollection = (userId: string) => collection(db, 'users', userId, 'words');
 
@@ -16,14 +16,14 @@ const cleanData = (obj: any) => {
 
 export const firebaseService = {
   
-  async syncWords(userId: string): Promise<Word[]> {
+  async syncWords(userId: string): Promise<any[]> {
     const q = query(getWordsCollection(userId));
     const querySnapshot = await getDocs(q);
     
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    } as Word));
+    }));
   },
 
   async addWord(userId: string, word: { english: string; uzbek: string; example?: string; exampleTranslation?: string; category?: string }): Promise<string> {
@@ -35,7 +35,7 @@ export const firebaseService = {
     return docRef.id;
   },
 
-  async updateWord(userId: string, word: Word): Promise<void> {
+  async updateWord(userId: string, word: any): Promise<void> {
     const wordRef = doc(db, 'users', userId, 'words', word.id);
     const { id, ...data } = word;
     
@@ -79,42 +79,5 @@ export const firebaseService = {
   async updateSettings(userId: string, settings: Partial<{ dailyGoal: number; currentStreak: number; lastActivityDate: string; xp: number; level: number; coins: number; inventory: string[]; activeTheme: string }>): Promise<void> {
     const userRef = doc(db, 'users', userId);
     await setDoc(userRef, cleanData(settings), { merge: true });
-  },
-
-  async updateLeaderboard(userId: string, displayName: string, xp: number, level: number, avatar?: string): Promise<void> {
-    const leaderboardRef = doc(db, 'leaderboard', userId);
-    await setDoc(leaderboardRef, cleanData({
-      displayName,
-      xp,
-      level,
-      avatar,
-      lastUpdated: new Date().toISOString()
-    }), { merge: true });
-  },
-
-  async getLeaderboard(limit: number = 50): Promise<any[]> {
-    const leaderboardCollection = collection(db, 'leaderboard');
-    const q = query(leaderboardCollection);
-    const querySnapshot = await getDocs(q);
-    
-    const entries = querySnapshot.docs.map(doc => ({
-      userId: doc.id,
-      ...doc.data()
-    }));
-
-    // Sort by XP descending
-    entries.sort((a, b) => (b.xp || 0) - (a.xp || 0));
-    
-    // Add rank and limit
-    return entries.slice(0, limit).map((entry, index) => ({
-      ...entry,
-      rank: index + 1
-    }));
-  },
-
-  async getUserRank(userId: string): Promise<number> {
-    const leaderboard = await this.getLeaderboard(1000); // Get more entries to find user
-    const userEntry = leaderboard.find(entry => entry.userId === userId);
-    return userEntry ? userEntry.rank : -1;
   }
 };
