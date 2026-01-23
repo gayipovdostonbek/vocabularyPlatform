@@ -62,6 +62,13 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
         e.preventDefault();
         if (!newEnglish || !newUzbek) return;
 
+        // Duplicate Check
+        const isDuplicate = words.some(w => w.english.toLowerCase() === newEnglish.trim().toLowerCase());
+        if (isDuplicate) {
+            alert("Bu so'z allaqachon mavjud!");
+            return;
+        }
+
         setLoading(true);
         try {
             const data = {
