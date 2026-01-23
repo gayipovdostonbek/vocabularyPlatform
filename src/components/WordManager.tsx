@@ -256,94 +256,102 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                 )}
 
                 <form onSubmit={handleAdd} className="glass-panel" style={{ padding: '1.5rem', border: '1px solid var(--accent-glow)' }}>
-                    <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                        {/* Left Column */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                            <div className="input-group">
-                                <Globe size={18} style={{ color: '#3b82f6' }} />
-                                <input
-                                    className="modern-input"
-                                    placeholder="Inglizcha so'z"
-                                    value={newEnglish}
-                                    onChange={e => setNewEnglish(e.target.value)}
-                                    required
-                                />
-                                <button
-                                    type="button"
-                                    onClick={handleAutoFill}
-                                    disabled={autoFilling || !newEnglish}
-                                    style={{
-                                        background: 'transparent',
-                                        border: 'none',
-                                        color: 'var(--accent)',
-                                        cursor: 'pointer',
-                                        padding: '0.2rem',
-                                        opacity: autoFilling || !newEnglish ? 0.5 : 1
-                                    }}
-                                    title="Auto-fill"
-                                >
-                                    <Wand2 size={18} className={autoFilling ? 'spin' : ''} />
-                                </button>
-                            </div>
-
-                            <div className="input-group">
-                                <Globe size={18} style={{ color: '#10b981' }} />
-                                <input
-                                    className="modern-input"
-                                    placeholder="O'zbekcha tarjimasi"
-                                    value={newUzbek}
-                                    onChange={e => setNewUzbek(e.target.value)}
-                                    required
-                                />
-                            </div>
-
-                            <div className="input-group">
-                                <Tag size={18} />
-                                <input
-                                    className="modern-input"
-                                    placeholder="Mavzu (Category)..."
-                                    value={category}
-                                    onChange={e => setCategory(e.target.value)}
-                                    list="category-suggestions"
-                                />
-                                <datalist id="category-suggestions">
-                                    {availableCategories.map(cat => (
-                                        <option key={cat} value={cat} />
-                                    ))}
-                                    <option value="Sayohat" />
-                                    <option value="Ish" />
-                                    <option value="Oziq-ovqat" />
-                                    <option value="IT" />
-                                </datalist>
-                            </div>
-                        </div>
-
-                        {/* Right Column */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                            <div className="input-group">
-                                <BookOpen size={18} />
-                                <input
-                                    className="modern-input"
-                                    placeholder="Misol (Inglizcha gap)..."
-                                    value={newExample}
-                                    onChange={e => setNewExample(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="input-group">
-                                <Languages size={18} />
-                                <input
-                                    className="modern-input"
-                                    placeholder="Misol tarjimasi..."
-                                    value={newExampleTranslation}
-                                    onChange={e => setNewExampleTranslation(e.target.value)}
-                                />
-                            </div>
-
-                            <button type="submit" className="btn btn-primary" disabled={loading} style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', alignItems: 'center', width: '100%', marginBottom: '0.5rem' }}>
-                                {loading ? 'Saqlanmoqda...' : <><Plus size={20} /> Qo'shish</>}
+                    <div className="form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.2rem' }}>
+                        <div className="input-group">
+                            <Globe size={18} style={{ color: '#3b82f6' }} />
+                            <input
+                                className="modern-input"
+                                placeholder="Inglizcha so'z"
+                                value={newEnglish}
+                                onChange={e => setNewEnglish(e.target.value)}
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={handleAutoFill}
+                                disabled={autoFilling || !newEnglish}
+                                style={{
+                                    background: 'transparent',
+                                    border: 'none',
+                                    color: 'var(--accent)',
+                                    cursor: 'pointer',
+                                    padding: '0.2rem',
+                                    opacity: autoFilling || !newEnglish ? 0.5 : 1
+                                }}
+                                title="Auto-fill"
+                            >
+                                <Wand2 size={18} className={autoFilling ? 'spin' : ''} />
                             </button>
                         </div>
+
+                        <div className="input-group">
+                            <Globe size={18} style={{ color: '#10b981' }} />
+                            <input
+                                className="modern-input"
+                                placeholder="O'zbekcha tarjimasi"
+                                value={newUzbek}
+                                onChange={e => setNewUzbek(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="input-group" style={{ gridColumn: '1 / -1' }}>
+                            <BookOpen size={18} />
+                            <textarea
+                                className="modern-input"
+                                placeholder="Misol (Inglizcha gap)..."
+                                value={newExample}
+                                onChange={e => setNewExample(e.target.value)}
+                                style={{ minHeight: '60px', resize: 'vertical' }}
+                            />
+                        </div>
+
+                        <div className="input-group" style={{ gridColumn: '1 / -1' }}>
+                            <Languages size={18} />
+                            <textarea
+                                className="modern-input"
+                                placeholder="Misol tarjimasi..."
+                                value={newExampleTranslation}
+                                onChange={e => setNewExampleTranslation(e.target.value)}
+                                style={{ minHeight: '60px', resize: 'vertical' }}
+                            />
+                        </div>
+
+                        <div className="input-group">
+                            <Tag size={18} />
+                            <input
+                                className="modern-input"
+                                placeholder="Mavzu (Category)..."
+                                value={category}
+                                onChange={e => setCategory(e.target.value)}
+                                list="category-suggestions"
+                            />
+                            <datalist id="category-suggestions">
+                                {availableCategories.map(cat => (
+                                    <option key={cat} value={cat} />
+                                ))}
+                                <option value="Sayohat" />
+                                <option value="Ish" />
+                                <option value="Oziq-ovqat" />
+                                <option value="IT" />
+                            </datalist>
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="btn btn-primary"
+                            disabled={loading}
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                gap: '0.5rem',
+                                alignItems: 'center',
+                                width: '100%',
+                                height: '44px'
+                            }}
+                        >
+                            {loading ? 'Saqlanmoqda...' : <><Plus size={20} /> Qo'shish</>}
+                        </button>
                     </div>
                 </form>
             </div>
@@ -373,8 +381,14 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                                             {isEditing ? (
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                                                     <input className="input-field" value={editEnglish} onChange={e => setEditEnglish(e.target.value)} style={{ margin: 0, padding: '0.4rem' }} autoFocus />
-                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                                                        <input className="input-field" placeholder="Misol..." value={editExample} onChange={e => setEditExample(e.target.value)} style={{ margin: 0, padding: '0.4rem', fontSize: '0.8rem' }} />
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.5rem' }}>
+                                                        <textarea
+                                                            className="input-field"
+                                                            placeholder="Misol..."
+                                                            value={editExample}
+                                                            onChange={e => setEditExample(e.target.value)}
+                                                            style={{ margin: 0, padding: '0.4rem', fontSize: '0.8rem', minHeight: '50px', resize: 'vertical' }}
+                                                        />
                                                         <input className="input-field" placeholder="Mavzu..." value={editCategory} onChange={e => setEditCategory(e.target.value)} list="category-suggestions" style={{ margin: 0, padding: '0.4rem', fontSize: '0.8rem' }} />
                                                     </div>
                                                 </div>
@@ -422,7 +436,13 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                                             {isEditing ? (
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                                                     <input className="input-field" value={editUzbek} onChange={e => setEditUzbek(e.target.value)} style={{ margin: 0, padding: '0.4rem' }} />
-                                                    <input className="input-field" placeholder="Misol tarjimasi..." value={editExampleTranslation} onChange={e => setEditExampleTranslation(e.target.value)} style={{ margin: 0, padding: '0.4rem', fontSize: '0.8rem' }} />
+                                                    <textarea
+                                                        className="input-field"
+                                                        placeholder="Misol tarjimasi..."
+                                                        value={editExampleTranslation}
+                                                        onChange={e => setEditExampleTranslation(e.target.value)}
+                                                        style={{ margin: 0, padding: '0.4rem', fontSize: '0.8rem', minHeight: '50px', resize: 'vertical' }}
+                                                    />
                                                 </div>
                                             ) : (
                                                 <div>

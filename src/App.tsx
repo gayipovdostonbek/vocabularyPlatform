@@ -91,7 +91,7 @@ function App() {
       setError(null);
     } catch (err: any) {
       console.error("Failed to load words:", err);
-      setError("Failed to connect to Firebase. Check your configuration.");
+      setError(`Firebase Error: ${err.message || "Unknown error"}. Check console for details.`);
     } finally {
       setLoading(false);
     }
