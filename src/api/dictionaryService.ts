@@ -80,9 +80,9 @@ export const dictionaryService = {
             }
 
             return {
-                translation: translation.toLowerCase(), // Usually dictionary returns lowercase
+                translation: decodeHtmlEntities(translation.toLowerCase()), // Usually dictionary returns lowercase
                 example,
-                exampleTranslation
+                exampleTranslation: decodeHtmlEntities(exampleTranslation)
             };
 
         } catch (error) {
@@ -90,4 +90,14 @@ export const dictionaryService = {
             return { translation: '', example: '', exampleTranslation: '' }; // Fallback to empty
         }
     }
+};
+
+const decodeHtmlEntities = (text: string) => {
+    if (!text) return '';
+    return text
+        .replace(/&#39;/g, "'")
+        .replace(/&quot;/g, '"')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>');
 };
