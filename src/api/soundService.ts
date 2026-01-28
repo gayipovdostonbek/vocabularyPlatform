@@ -1,4 +1,21 @@
-export const soundService = {
+class SoundService {
+    private voices: SpeechSynthesisVoice[] = [];
+
+    constructor() {
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            this.loadVoices();
+            if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                window.speechSynthesis.onvoiceschanged = () => {
+                    this.loadVoices();
+                };
+            }
+        }
+    }
+
+    private loadVoices() {
+        this.voices = window.speechSynthesis.getVoices();
+    }
+
     playSuccess() {
         const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
         const osc = ctx.createOscillator();
@@ -16,7 +33,7 @@ export const soundService = {
 
         osc.start();
         osc.stop(ctx.currentTime + 0.3);
-    },
+    }
 
     playFailure() {
         const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -35,12 +52,43 @@ export const soundService = {
 
         osc.start();
         osc.stop(ctx.currentTime + 0.3);
-    },
+    }
 
     speak(text: string) {
+        if (!window.speechSynthesis) {
+            console.error("Saytda ovoz o'qish imkoniyati yo'q");
+            return;
+        }
+
+        // Cancel any currently playing audio
+        window.speechSynthesis.cancel();
+
         const utterance = new SpeechSynthesisUtterance(text);
+        
+        // Try to reload voices if empty (sometimes needed for Chrome)
+        if (this.voices.length === 0) {
+            this.voices = window.speechSynthesis.getVoices();
+        }
+
+        // Select the best English voice
+        const preferredVoice = this.voices.find(v => v.name.includes('Google US English')) 
+            || this.voices.find(v => v.lang === 'en-US') 
+            || this.voices.find(v => v.lang.startsWith('en'));
+
+        if (preferredVoice) {
+            utterance.voice = preferredVoice;
+        }
+
         utterance.lang = 'en-US';
         utterance.rate = 0.9;
+        
+        // Handle errors
+        utterance.onerror = (e) => {
+            console.error('Speech synthesis error:', e);
+        };
+
         window.speechSynthesis.speak(utterance);
     }
-};
+}
+
+export const soundService = new SoundService();
