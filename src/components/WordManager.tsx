@@ -4,16 +4,17 @@ import { firebaseService } from '../api/firebaseService';
 import { soundService } from '../api/soundService';
 import { Plus, Trash2, X, RefreshCw, Pencil, Check, XCircle, Volume2, Wand2, Globe, BookOpen, Tag, Languages, Search } from 'lucide-react';
 import { dictionaryService } from '../api/dictionaryService';
+import { useNavigate } from 'react-router-dom';
 
 interface WordManagerProps {
     userId: string;
     words: Word[];
     initialFilter?: 'all' | 'learning' | 'learned';
     onUpdate: (words: Word[]) => void;
-    onClose: () => void;
 }
 
-export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initialFilter = 'all', onUpdate, onClose }) => {
+export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initialFilter = 'all', onUpdate }) => {
+    const navigate = useNavigate();
     const [newEnglish, setNewEnglish] = useState('');
     const [newUzbek, setNewUzbek] = useState('');
     const [newExample, setNewExample] = useState('');
@@ -198,7 +199,7 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                     <button className="btn btn-secondary" onClick={handleSync} disabled={syncing}>
                         <RefreshCw size={18} className={syncing ? 'spin' : ''} />
                     </button>
-                    <button className="btn btn-secondary" onClick={onClose}><X size={18} /></button>
+                    <button className="btn btn-secondary" onClick={() => navigate('/')}><X size={18} /></button>
                 </div>
             </div>
 

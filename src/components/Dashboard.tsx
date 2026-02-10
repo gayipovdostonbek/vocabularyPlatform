@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Award, Settings, Flame, Sparkles, Volume2, Keyboard, TrendingUp, Zap, Calendar, Check, Trash2, Mic, BookOpen, ShoppingBag, Coins } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import type { Word } from '../types';
 import { soundService } from '../api/soundService';
 
@@ -15,15 +16,13 @@ interface DashboardProps {
     streak?: number;
     onStart: (mode: 'flashcard' | 'quiz' | 'spelling' | 'speaking', category?: string) => void;
     onReset: () => void;
-    onManage: (filter?: 'all' | 'learning' | 'learned') => void;
-    onOpenSettings: () => void;
     onOpenShop: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
-    userProfile, words, dailyGoal, streak = 0, onStart, onReset, onManage, onOpenSettings, onOpenShop
+    userProfile, words, dailyGoal, streak = 0, onStart, onReset, onOpenShop
 }) => {
-
+    const navigate = useNavigate();
     const [showResetConfirm, setShowResetConfirm] = React.useState(false);
 
     // Gamification Stats
@@ -132,7 +131,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>/ {dailyGoal}</span>
                                 </div>
                             </div>
-                            <button onClick={onOpenSettings} className="btn-icon" style={{ background: 'var(--subtle-bg)', padding: '0.5rem', borderRadius: '0.75rem', height: 'fit-content' }}>
+                            <button onClick={() => navigate('/settings')} className="btn-icon" style={{ background: 'var(--subtle-bg)', padding: '0.5rem', borderRadius: '0.75rem', height: 'fit-content' }}>
                                 <Settings size={20} style={{ color: 'var(--text-muted)' }} />
                             </button>
                         </div>
@@ -156,7 +155,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </div>
 
                     {/* Word Statistics Card - FIRST */}
-                    <div className="glass-panel" onClick={() => onManage()} style={{ padding: '2rem', cursor: 'pointer', transition: 'all 0.3s', border: '1px solid transparent', position: 'relative', overflow: 'hidden' }}
+                    <div className="glass-panel" onClick={() => navigate('/manage')} style={{ padding: '2rem', cursor: 'pointer', transition: 'all 0.3s', border: '1px solid transparent', position: 'relative', overflow: 'hidden' }}
                         onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
                         onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}>
                         <div style={{ position: 'absolute', top: 0, right: 0, padding: '1.5rem', opacity: 0.1 }}>
@@ -389,6 +388,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>So'zlarni to'g'ri talaffuz qilishni mashq qiling.</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ec4899', fontWeight: 600, fontSize: '0.9rem' }}>
                                 Boshlash <TrendingUp size={16} />
+                            </div>
+                        </div>
+
+                        {/* Grammar Section */}
+                        <div className="glass-panel mode-card interactable" onClick={() => navigate('/grammar')} style={{ padding: '2rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s ease', gridColumn: '1 / -1' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                                <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '1rem', borderRadius: '1rem' }}>
+                                    <BookOpen size={32} style={{ color: '#f59e0b' }} />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <h4 style={{ fontSize: '1.3rem', margin: '0 0 0.5rem 0' }}>Grammatika</h4>
+                                    <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>
+                                        Ingliz tili qoidalarini o'rganing. Darslar, misollar va testlar orqali bilimingizni oshiring.
+                                    </p>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#f59e0b', fontWeight: 600, fontSize: '1rem' }}>
+                                    Kirish <TrendingUp size={18} />
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { Dashboard } from './components/Dashboard';
 import { Flashcard } from './components/Flashcard';
 import { WordManager } from './components/WordManager';
@@ -20,11 +21,15 @@ import { SpellingQuiz } from './components/SpellingQuiz';
 import { ReloadPrompt } from './components/ReloadPrompt';
 
 import { SpeakingQuiz } from './components/SpeakingQuiz';
+import { GrammarDashboard } from './components/GrammarDashboard';
+import { GrammarLesson } from './components/GrammarLesson';
+import { Settings } from './components/Settings';
 
-type ViewMode = 'DASHBOARD' | 'STUDY' | 'MANAGE' | 'SETTINGS';
 type StudyMode = 'flashcard' | 'quiz' | 'spelling' | 'speaking';
 
 function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile>({
     xp: 0,
@@ -34,7 +39,6 @@ function App() {
   });
   const [authLoading, setAuthLoading] = useState(true);
   const [words, setWords] = useState<Word[]>([]);
-  const [view, setView] = useState<ViewMode>('DASHBOARD');
   const [loading, setLoading] = useState(false);
   const [isShopOpen, setIsShopOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +50,6 @@ function App() {
     return saved ? saved === 'dark' : true;
   });
 
-  const [wordFilter, setWordFilter] = useState<'all' | 'learning' | 'learned'>('all');
   const [studyMode, setStudyMode] = useState<StudyMode>('flashcard');
   const [studyQueue, setStudyQueue] = useState<Word[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -114,30 +117,22 @@ function App() {
   // Apply Theme
   useEffect(() => {
     if (userProfile.activeTheme) {
-      // Reset previous theme classes if any (assuming simple class-based approach or attribute)
       document.documentElement.setAttribute('data-theme', userProfile.activeTheme);
-
-      // Dynamic CSS Variable Update for specific themes if needed
       const themeColors: Record<string, string> = {
         'theme-ocean': '#0ea5e9',
         'theme-forest': '#22c55e',
         'theme-sunset': '#f59e0b',
         'theme-cyber': '#d946ef'
       };
-
       if (themeColors[userProfile.activeTheme]) {
         document.documentElement.style.setProperty('--accent', themeColors[userProfile.activeTheme]);
-        // Helper to generate a glow color - just a simple implementation
         document.documentElement.style.setProperty('--accent-glow', `${themeColors[userProfile.activeTheme]}60`);
       }
     }
   }, [userProfile.activeTheme]);
 
   const handleStartStudy = (mode: StudyMode = 'flashcard', category?: string) => {
-    // SRS Logic: Prioritize words due for review
     const today = new Date().toISOString();
-
-    // Filter by Category first if provided
     let candidateWords = words;
     if (category) {
       candidateWords = words.filter(w => w.category === category);
@@ -145,10 +140,9 @@ function App() {
 
     const dueForReview = candidateWords.filter(w =>
       w.status !== 'learned' &&
-      (w.nextReviewDate ? w.nextReviewDate <= today : true) // Include if due OR if never reviewed (no date)
+      (w.nextReviewDate ? w.nextReviewDate <= today : true)
     );
 
-    // If no reviews due, take new/learning words
     const toLearn = dueForReview.length > 0 ? dueForReview : candidateWords.filter(w => w.status !== 'learned');
 
     if (toLearn.length === 0) {
@@ -160,7 +154,7 @@ function App() {
     setStudyQueue(shuffled);
     setCurrentIndex(0);
     setStudyMode(mode);
-    setView('STUDY');
+    navigate(`/study/${mode}`);
   };
 
   const handleUpdateGoal = async (newGoal: number) => {
@@ -180,18 +174,15 @@ function App() {
       soundService.playFailure();
     }
 
-
-    // Gamification Rewards
     const rewards = gamificationService.calculateRewards(known, streak);
     const newXP = userProfile.xp + rewards.xp;
     const newCoins = userProfile.coins + rewards.coins;
 
-    // Check Level Up
     const oldLevelInfo = gamificationService.getLevel(userProfile.xp);
     const newLevelInfo = gamificationService.getLevel(newXP);
 
     if (newLevelInfo.current.level > oldLevelInfo.current.level) {
-      soundService.playSuccess(); // Extra sound or specific level up sound
+      soundService.playSuccess();
       confetti({
         particleCount: 200,
         spread: 100,
@@ -208,21 +199,17 @@ function App() {
     };
 
     setUserProfile(updatedProfile);
-    // Persist profile to Firebase (TODO: Create separate profile path or store in user settings)
     firebaseService.updateSettings(user.uid, {
       xp: newXP,
       coins: newCoins,
       level: newLevelInfo.current.level
     });
 
-    // SRS Calculation
-    const quality = known ? 5 : 1; // Simplification: 5 for correct, 1 for incorrect
+    const quality = known ? 5 : 1;
     const updatedWord = srsService.calculateReview(word, quality);
 
-    // Update local state
     setWords(words.map(w => w.id === word.id ? updatedWord : w));
 
-    // Update Firebase
     try {
       await firebaseService.updateWord(user.uid, updatedWord);
     } catch (err: any) {
@@ -230,40 +217,26 @@ function App() {
       setError("Progressni saqlashda xatolik yuz berdi: " + err.message);
     }
 
-    // Move to next
     if (currentIndex < studyQueue.length - 1) {
       setTimeout(() => setCurrentIndex(prev => prev + 1), 300);
     } else {
-      // Session End
       confetti({
         particleCount: 150,
         spread: 100,
         origin: { y: 0.6 }
       });
       try {
-        await updateStreak(); // Sync streak on completion
+        await updateStreak();
       } catch (err: any) {
         console.error("Failed to update streak:", err);
       }
-      setTimeout(() => setView('DASHBOARD'), 1500);
-    }
-  };
-
-  const handleManage = (filter: 'all' | 'learning' | 'learned' = 'all') => {
-    setWordFilter(filter);
-    setView('MANAGE');
-  };
-
-  const handleReset = () => {
-    if (confirm('Are you sure you want to clear all local data? (Firebase data remains)')) {
-      setWords([]);
-      setView('DASHBOARD');
+      setTimeout(() => navigate('/'), 1500);
     }
   };
 
   const handleLogout = async () => {
     await authService.signOut();
-    setView('DASHBOARD');
+    navigate('/');
   };
 
   const updateStreak = async () => {
@@ -419,10 +392,10 @@ function App() {
       `}</style>
 
         <main>
-          {view !== 'DASHBOARD' && (
+          {location.pathname !== '/' && (
             <button
               className="btn btn-secondary"
-              onClick={() => setView('DASHBOARD')}
+              onClick={() => navigate('/')}
               style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
             >
               <ArrowLeft size={18} /> Dashboardga qaytish
@@ -436,141 +409,125 @@ function App() {
               <span style={{ fontSize: '1.2rem' }}>⚠️</span>
               <div>
                 <strong>Xatolik:</strong> {error}
-                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  Iltimos, <code>src/firebaseConfig.ts</code> dagi sozlamalarni tekshiring.
-                </p>
               </div>
             </div>
           )}
 
-          {view === 'DASHBOARD' && (
-            <Dashboard
-              userProfile={userProfile}
-              words={words}
-              dailyGoal={dailyGoal}
-              streak={streak}
-              onStart={handleStartStudy}
-              onReset={handleReset}
-              onManage={handleManage}
-              onOpenSettings={() => setView('SETTINGS')}
-              onOpenShop={() => setIsShopOpen(true)}
-            />
-          )}
+          <Routes>
+            <Route path="/" element={
+              <Dashboard
+                userProfile={userProfile}
+                words={words}
+                dailyGoal={dailyGoal}
+                streak={streak}
+                onStart={handleStartStudy}
+                onReset={() => {
+                  if (confirm('Are you sure you want to clear all local data? (Firebase data remains)')) {
+                    setWords([]);
+                  }
+                }}
+                onOpenShop={() => setIsShopOpen(true)}
+              />
+            } />
 
-          {view === 'SETTINGS' && (
-            <div className="glass-panel animate-fade-in" style={{ padding: '2rem', maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
-              <h2 style={{ marginBottom: '1.5rem' }}>Kunlik maqsad</h2>
-              <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Har kuni nechtadan yangi so'z yodlamoqchisiz?</p>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '2rem' }}>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => handleUpdateGoal(Math.max(1, dailyGoal - 5))}
-                  style={{ width: '40px', height: '40px', padding: 0 }}
-                >
-                  -
-                </button>
-                <div style={{ fontSize: '2.5rem', fontWeight: 700, minWidth: '80px' }}>{dailyGoal}</div>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => handleUpdateGoal(dailyGoal + 5)}
-                  style={{ width: '40px', height: '40px', padding: 0 }}
-                >
-                  +
-                </button>
-              </div>
-              <button className="btn btn-primary" onClick={() => setView('DASHBOARD')} style={{ width: '100%' }}>Saqlash va qaytish</button>
-            </div>
-          )}
+            <Route path="/manage" element={
+              <WordManager
+                userId={user.uid}
+                words={words}
+                initialFilter={'all'}
+                onUpdate={(updated: Word[]) => setWords(updated)}
+              />
+            } />
 
-          {view === 'MANAGE' && (
-            <WordManager
-              userId={user.uid}
-              words={words}
-              initialFilter={wordFilter}
-              onUpdate={(updated: Word[]) => setWords(updated)}
-              onClose={() => setView('DASHBOARD')}
-            />
-          )}
+            <Route path="/settings" element={
+              <Settings
+                dailyGoal={dailyGoal}
+                onUpdateGoal={handleUpdateGoal}
+              />
+            } />
 
-          {view === 'STUDY' && studyQueue.length > 0 && (
-            <div style={{ width: '100%', maxWidth: '600px', margin: '0 auto' }}>
-              <div style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--text-muted)' }}>
-                So'z {currentIndex + 1} / {studyQueue.length}
-              </div>
+            <Route path="/grammar" element={<GrammarDashboard />} />
+            <Route path="/grammar/:topicId" element={<GrammarLesson />} />
 
-              {studyMode === 'flashcard' ? (
-                <Flashcard
-                  key={studyQueue[currentIndex].id}
-                  word={studyQueue[currentIndex]}
-                  onResult={handleCardResult}
-                />
-              ) : studyMode === 'quiz' ? (
-                <Quiz
-                  key={studyQueue[currentIndex].id}
-                  word={studyQueue[currentIndex]}
-                  allWords={words}
-                  onResult={handleCardResult}
-                />
-              ) : studyMode === 'speaking' ? (
-                <SpeakingQuiz
-                  key={studyQueue[currentIndex].id}
-                  word={studyQueue[currentIndex]}
-                  onResult={handleCardResult}
-                />
+            <Route path="/study/:mode" element={
+              studyQueue.length > 0 ? (
+                <div style={{ width: '100%', maxWidth: '600px', margin: '0 auto' }}>
+                  <div style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--text-muted)' }}>
+                    So'z {currentIndex + 1} / {studyQueue.length}
+                  </div>
+
+                  {studyMode === 'flashcard' ? (
+                    <Flashcard
+                      key={studyQueue[currentIndex].id}
+                      word={studyQueue[currentIndex]}
+                      onResult={handleCardResult}
+                    />
+                  ) : studyMode === 'quiz' ? (
+                    <Quiz
+                      key={studyQueue[currentIndex].id}
+                      word={studyQueue[currentIndex]}
+                      allWords={words}
+                      onResult={handleCardResult}
+                    />
+                  ) : studyMode === 'speaking' ? (
+                    <SpeakingQuiz
+                      key={studyQueue[currentIndex].id}
+                      word={studyQueue[currentIndex]}
+                      onResult={handleCardResult}
+                    />
+                  ) : (
+                    <SpellingQuiz
+                      key={studyQueue[currentIndex].id}
+                      word={studyQueue[currentIndex]}
+                      onResult={handleCardResult}
+                    />
+                  )}
+                </div>
               ) : (
-                <SpellingQuiz
-                  key={studyQueue[currentIndex].id}
-                  word={studyQueue[currentIndex]}
-                  onResult={handleCardResult}
-                />
-              )}
-            </div>
-          )}
+                <Navigate to="/" replace />
+              )
+            } />
+          </Routes>
         </main>
       </div>
 
-      {/* Shop Modal */}
-      {
-        isShopOpen && (
-          <ShopModal
-            userProfile={userProfile}
-            onClose={() => setIsShopOpen(false)}
-            onBuy={async (itemId, price, _type) => {
-              const newCoins = userProfile.coins - price;
-              const newInventory = [...userProfile.inventory, itemId];
-              const updatedProfile = {
-                ...userProfile,
+      {isShopOpen && (
+        <ShopModal
+          userProfile={userProfile}
+          onClose={() => setIsShopOpen(false)}
+          onBuy={async (itemId, price, _type) => {
+            const newCoins = userProfile.coins - price;
+            const newInventory = [...userProfile.inventory, itemId];
+            const updatedProfile = {
+              ...userProfile,
+              coins: newCoins,
+              inventory: newInventory
+            };
+
+            setUserProfile(updatedProfile);
+            soundService.playSuccess();
+
+            if (user) {
+              await firebaseService.updateSettings(user.uid, {
                 coins: newCoins,
                 inventory: newInventory
-              };
+              });
+            }
+          }}
+          onEquip={async (itemId, type) => {
+            const updatedProfile = type === 'theme'
+              ? { ...userProfile, activeTheme: itemId }
+              : { ...userProfile, activeAvatar: itemId };
+            setUserProfile(updatedProfile);
 
-              setUserProfile(updatedProfile);
-              soundService.playSuccess();
-
-              // Persist
-              if (user) {
-                await firebaseService.updateSettings(user.uid, {
-                  coins: newCoins,
-                  inventory: newInventory
-                });
-              }
-            }}
-            onEquip={async (itemId, type) => {
-              const updatedProfile = type === 'theme'
-                ? { ...userProfile, activeTheme: itemId }
-                : { ...userProfile, activeAvatar: itemId };
-              setUserProfile(updatedProfile);
-
-              // Persist
-              if (user) {
-                await firebaseService.updateSettings(user.uid, {
-                  [type === 'theme' ? 'activeTheme' : 'activeAvatar']: itemId
-                });
-              }
-            }}
-          />
-        )
-      }
+            if (user) {
+              await firebaseService.updateSettings(user.uid, {
+                [type === 'theme' ? 'activeTheme' : 'activeAvatar']: itemId
+              });
+            }
+          }}
+        />
+      )}
     </>
   );
 }
