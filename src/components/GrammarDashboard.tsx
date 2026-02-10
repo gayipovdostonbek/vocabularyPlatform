@@ -50,101 +50,82 @@ export const GrammarDashboard: React.FC = () => {
     return (
         <div className="animate-fade-in" style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '4rem' }}>
             {/* Hero Section */}
-            <div style={{
-                marginBottom: '3rem',
+            <div className="glass-panel" style={{
+                marginBottom: '2rem',
                 textAlign: 'center',
-                padding: '3rem 2rem',
-                borderRadius: '2rem',
+                padding: '2rem 1.5rem',
                 background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%)',
-                border: '1px solid var(--border-color)',
                 position: 'relative',
                 overflow: 'hidden'
             }}>
-                <div style={{ position: 'absolute', top: '-10%', right: '-5%', opacity: 0.1 }}>
-                    <GraduationCap size={200} />
+                <div className="mobile-hide" style={{ position: 'absolute', top: '-10%', right: '-5%', opacity: 0.1 }}>
+                    <GraduationCap size={160} />
                 </div>
 
                 <h2 style={{
-                    fontSize: '2.5rem',
+                    fontSize: 'clamp(1.5rem, 5vw, 2.5rem)',
                     fontWeight: 900,
-                    marginBottom: '1rem',
+                    marginBottom: '0.75rem',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '1rem',
+                    gap: '0.75rem',
                     background: 'var(--title-gradient)',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent'
                 }}>
-                    <GraduationCap size={44} style={{ color: 'var(--accent)' }} />
-                    Grammatika Markazi
+                    <GraduationCap className="icon-main" style={{ color: 'var(--accent)', width: 'clamp(28px, 6vw, 44px)', height: 'clamp(28px, 6vw, 44px)' }} />
+                    Grammatika
                 </h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
-                    Ingliz tili qoidalarini eng oson va qulay usulda o'rganing.
-                    Mavzularni darajalar bo'yicha saralang va bilimingizni mustahkamlang.
+                <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.9rem, 3vw, 1.1rem)', maxWidth: '600px', margin: '0 auto' }}>
+                    Qoidalarni oson o'rganing va bilimingizni mustahkamlang.
                 </p>
             </div>
 
             {/* Search & Filter Bar */}
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1.5rem',
-                marginBottom: '2.5rem'
-            }}>
-                <div style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '1rem',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                }}>
-                    <div className="tab-container" style={{ margin: 0 }}>
-                        {levels.map(level => (
+            <div className="search-filter-container">
+                <div className="tab-container">
+                    {levels.map(level => {
+                        const shortLabel = level === 'All' ? 'All' : level.split(' ')[0];
+                        return (
                             <div
                                 key={level}
                                 onClick={() => setSelectedLevel(level)}
                                 className={`tab-item ${selectedLevel === level ? 'active' : ''}`}
+                                title={level}
                             >
-                                {level}
+                                {shortLabel}
                             </div>
-                        ))}
-                    </div>
+                        );
+                    })}
+                </div>
 
-                    <div style={{
-                        position: 'relative',
-                        flex: '1',
-                        minWidth: '280px'
-                    }}>
-                        <Search
-                            size={18}
-                            style={{
-                                position: 'absolute',
-                                left: '1rem',
-                                top: '50%',
-                                transform: 'translateY(-50%)',
-                                color: 'var(--text-muted)'
-                            }}
-                        />
-                        <input
-                            type="text"
-                            placeholder="Mavzulardan qidirish..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="input-field"
-                            style={{ paddingLeft: '2.8rem', margin: 0 }}
-                        />
-                    </div>
+                <div className="search-wrapper">
+                    <Search
+                        size={18}
+                        style={{
+                            position: 'absolute',
+                            left: '1rem',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: 'var(--text-muted)',
+                            pointerEvents: 'none'
+                        }}
+                    />
+                    <input
+                        type="text"
+                        placeholder="Qidirish..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="input-field"
+                        style={{ paddingLeft: '2.8rem', margin: 0 }}
+                    />
                 </div>
             </div>
 
             {/* Topics Grid */}
             {filteredTopics.length > 0 ? (
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                    gap: '1.5rem'
-                }}>
+                <div className="topics-grid">
                     {filteredTopics.map((topic, index) => (
                         <Link
                             key={topic.id}

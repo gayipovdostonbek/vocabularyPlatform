@@ -224,14 +224,15 @@ body {
 /* Tabs */
 .tab-container {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.4rem;
   background: var(--subtle-bg);
-  padding: 0.4rem;
+  padding: 0.35rem;
   border-radius: 1rem;
   border: 1px solid var(--border-color);
-  margin-bottom: 2rem;
-  overflow-x: auto;
-  scrollbar-width: none;
+  overflow: hidden; 
+  flex: 0 0 auto; /* Don't grow, maintain compact size */
+  width: fit-content;
+  justify-content: flex-start;
 }
 .tab-container::-webkit-scrollbar { display: none; }
 
@@ -244,12 +245,72 @@ body {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
   color: var(--text-muted);
+  flex: 1;
+  text-align: center;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .tab-item {
+    font-size: 0.85rem;
+    padding: 0.6rem 0.25rem;
+  }
 }
 
 .tab-item.active {
   background: var(--bg-secondary);
   color: var(--accent);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Search & Filter Row */
+.search-filter-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.search-wrapper {
+  position: relative;
+  width: 300px;
+  min-width: 200px;
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 640px) {
+  .search-filter-container {
+    gap: 0.75rem;
+  }
+  
+  .search-wrapper {
+    width: 48px; /* Collapse to icon-only size or very small on tiny screens if needed, but user wants one row */
+    min-width: 48px;
+    flex: 0 0 auto;
+  }
+  
+  .search-wrapper:focus-within {
+    width: 150px; /* Expand on focus if on mobile */
+  }
+
+  .search-wrapper .input-field {
+    padding-right: 0.5rem;
+  }
+}
+
+/* Topic Grid Responsiveness */
+.topics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 480px) {
+  .topics-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -319,7 +380,27 @@ body {
   opacity: 0.6;
 }
 
-/* Filter Pill Styles */
+@media (max-width: 640px) {
+  .mobile-hide { display: none; }
+}
+
+.icon-main {
+  flex-shrink: 0;
+}
+
+.responsive-padding {
+  padding: 2.5rem;
+}
+
+.responsive-container {
+  padding: 0 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .responsive-padding {
+    padding: 1.5rem 1rem;
+  }
+}
 .filter-pill {
   padding: 0.5rem 1rem;
   border-radius: 2rem;

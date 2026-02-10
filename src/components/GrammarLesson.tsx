@@ -68,31 +68,32 @@ export const GrammarLesson: React.FC = () => {
     const levelColor = getLevelColor(topic.level);
 
     return (
-        <div className="animate-fade-in" style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '5rem' }}>
+        <div className="animate-fade-in responsive-container" style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '3rem' }}>
             {/* Header Content */}
             <div style={{
-                marginBottom: '2.5rem',
+                marginBottom: '2rem',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '1.5rem'
+                gap: '1.25rem'
             }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
                     <button
                         onClick={() => navigate('/grammar')}
                         className="btn btn-secondary"
-                        style={{ padding: '0.5rem 1rem', borderRadius: '1rem' }}
+                        style={{ padding: '0.4rem 0.8rem', borderRadius: '0.75rem', fontSize: '0.9rem' }}
                     >
-                        <ArrowLeft size={18} /> Orqaga
+                        <ArrowLeft size={16} /> <span className="mobile-hide">Orqaga</span>
                     </button>
                     <div style={{
-                        padding: '0.4rem 1rem',
+                        padding: '0.3rem 0.8rem',
                         borderRadius: '2rem',
                         background: `${levelColor}15`,
                         color: levelColor,
-                        fontSize: '0.85rem',
+                        fontSize: 'clamp(0.6rem, 2.5vw, 0.8rem)',
                         fontWeight: 800,
                         border: `1px solid ${levelColor}30`,
-                        letterSpacing: '1px'
+                        letterSpacing: '0.5px',
+                        whiteSpace: 'nowrap'
                     }}>
                         {topic.level.toUpperCase()}
                     </div>
@@ -101,15 +102,16 @@ export const GrammarLesson: React.FC = () => {
                 <div style={{ textAlign: 'left' }}>
                     <h1 style={{
                         margin: '0 0 0.5rem 0',
-                        fontSize: '2.4rem',
+                        fontSize: 'clamp(1.5rem, 6vw, 2.4rem)',
                         fontWeight: 900,
+                        lineHeight: 1.2,
                         background: 'var(--title-gradient)',
                         WebkitBackgroundClip: 'text',
                         WebkitTextFillColor: 'transparent'
                     }}>
                         {topic.title}
                     </h1>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '700px' }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: 'clamp(0.95rem, 3.5vw, 1.1rem)', maxWidth: '700px', lineHeight: 1.5 }}>
                         {topic.description}
                     </p>
                 </div>
@@ -169,7 +171,7 @@ export const GrammarLesson: React.FC = () => {
                     )}
                 </div>
 
-                <div style={{ padding: '2.5rem' }}>
+                <div className="responsive-padding">
                     {activeTab === 'learn' ? (
                         <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
                             {/* Rule Section */}
