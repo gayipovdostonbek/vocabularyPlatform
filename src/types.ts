@@ -31,8 +31,10 @@ export interface Verb {
   past: string;
   pastParticiple: string;
   translation_uz: string;
+  translation_ru?: string;
   level: string;
   example_sentence: string;
   example_translation_uz: string;
+  example_translation_ru?: string;
   isIrregular: boolean;
 }

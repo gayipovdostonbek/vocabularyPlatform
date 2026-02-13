@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, Award, Settings, Flame, Sparkles, Volume2, Keyboard, TrendingUp, Zap, Calendar, Check, Trash2, Mic, BookOpen, ShoppingBag, Coins } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { Word } from '../types';
 import { soundService } from '../api/soundService';
 
@@ -22,6 +23,7 @@ interface DashboardProps {
 export const Dashboard: React.FC<DashboardProps> = ({
     userProfile, words, dailyGoal, streak = 0, onStart, onReset, onOpenShop
 }) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [showResetConfirm, setShowResetConfirm] = React.useState(false);
 
@@ -51,18 +53,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
         d.setDate(d.getDate() - i);
         const dateStr = d.toISOString().split('T')[0];
         const count = words.filter(w => w.status === 'learned' && w.learnedAt?.startsWith(dateStr)).length;
-        const daysUz = { 'Mon': 'Du', 'Tue': 'Se', 'Wed': 'Ch', 'Thu': 'Pa', 'Fri': 'Ju', 'Sat': 'Sh', 'Sun': 'Ya' };
-        const dayEn = d.toLocaleDateString('en-US', { weekday: 'short' }) as keyof typeof daysUz;
+        const daysUz: Record<string, string> = {
+            'Mon': t('days.mon') || 'Mon',
+            'Tue': t('days.tue') || 'Tue',
+            'Wed': t('days.wed') || 'Wed',
+            'Thu': t('days.thu') || 'Thu',
+            'Fri': t('days.fri') || 'Fri',
+            'Sat': t('days.sat') || 'Sat',
+            'Sun': t('days.sun') || 'Sun'
+        };
+        const dayEn = d.toLocaleDateString('en-US', { weekday: 'short' });
         return { day: daysUz[dayEn] || dayEn, count };
     }).reverse();
 
     // Level Calculation
     const getLevel = (count: number) => {
-        if (count >= 1000) return { name: 'Legend', color: '#ec4899', icon: '👑' };
-        if (count >= 500) return { name: 'Master', color: '#8b5cf6', icon: '🎓' };
-        if (count >= 200) return { name: 'Scholar', color: '#f59e0b', icon: '📚' };
-        if (count >= 50) return { name: 'Rookie', color: '#3b82f6', icon: '🌱' };
-        return { name: 'Newbie', color: '#10b981', icon: '🥚' };
+        if (count >= 1000) return { name: t('ranks.legend'), color: '#ec4899', icon: '👑' };
+        if (count >= 500) return { name: t('ranks.master'), color: '#8b5cf6', icon: '🎓' };
+        if (count >= 200) return { name: t('ranks.scholar'), color: '#f59e0b', icon: '📚' };
+        if (count >= 50) return { name: t('ranks.rookie'), color: '#3b82f6', icon: '🌱' };
+        return { name: t('ranks.newbie'), color: '#10b981', icon: '🥚' };
     };
 
     const level = getLevel(learned);
@@ -95,14 +105,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             {level.icon}
                         </div>
                         <div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Current Rank</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('dashboard.currentRank')}</div>
                             <div style={{ fontSize: '1.5rem', fontWeight: 800, color: level.color }}>{level.name}</div>
                         </div>
                     </div>
 
                     <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                            <span>Progress to next rank</span>
+                            <span>{t('dashboard.rankProgress')}</span>
                             <span>{learned} / {nextLevelTarget} XP</span>
                         </div>
                         <div style={{ height: '8px', background: 'var(--subtle-bg)', borderRadius: '4px', overflow: 'hidden' }}>
@@ -124,7 +134,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                                     <Calendar size={16} className="text-secondary" />
-                                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Bugungi Maqsad</span>
+                                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('dashboard.dailyGoal')}</span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
                                     <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-1px' }}>{learnedToday}</span>
@@ -147,8 +157,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             </div>
                             <p style={{ margin: 0, fontSize: '0.9rem', color: progress >= 100 ? 'var(--success)' : 'var(--text-muted)' }}>
                                 {progress >= 100 ?
-                                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Check size={16} /> Maqsad bajarildi!</span> :
-                                    `Yana ${dailyGoal - learnedToday} ta so'z qoldi`
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Check size={16} /> {t('dashboard.goalAchieved')}</span> :
+                                    t('dashboard.remainingWords', { count: dailyGoal - learnedToday })
                                 }
                             </p>
                         </div>
@@ -165,18 +175,18 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                                 <BookOpen size={16} className="text-secondary" />
-                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Jami so'zlar</span>
+                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('dashboard.totalWords')}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
                                 <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-1px' }}>{total}</span>
                             </div>
                             <div style={{ display: 'flex', gap: '2rem', marginTop: '1rem' }}>
                                 <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--success)', marginBottom: '0.25rem' }}>Yodlangan</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--success)', marginBottom: '0.25rem' }}>{t('dashboard.learned')}</div>
                                     <div style={{ fontWeight: 700, fontSize: '1.5rem' }}>{learned}</div>
                                 </div>
                                 <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '0.75rem', color: '#3b82f6', marginBottom: '0.25rem' }}>O'rganilmoqda</div>
+                                    <div style={{ fontSize: '0.75rem', color: '#3b82f6', marginBottom: '0.25rem' }}>{t('dashboard.learning')}</div>
                                     <div style={{ fontWeight: 700, fontSize: '1.5rem' }}>{learning}</div>
                                 </div>
                             </div>
@@ -192,7 +202,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                                 <Award size={16} className="text-secondary" />
-                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Daraja</span>
+                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('dashboard.rank')}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
                                 <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-1px' }}>{levelInfo.current.level}</span>
@@ -222,14 +232,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                                 <Flame size={16} className="text-secondary" />
-                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Streak</span>
+                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('dashboard.streak')}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
                                 <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-1px' }}>{streak}</span>
-                                <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>kun</span>
+                                <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>{t('days.sun').toLowerCase().endsWith('k') ? '' : ''}</span>
                             </div>
                             <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                                {streak > 0 ? `Ajoyib! ${streak} kun ketma-ket mashq qildingiz!` : 'Bugun mashq qiling va streak boshlang!'}
+                                {streak > 0 ? t('dashboard.streakGood', { count: streak }) : t('dashboard.streakStart')}
                             </div>
                         </div>
                     </div>
@@ -243,7 +253,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                                 <Coins size={16} className="text-secondary" />
-                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Tangalar</span>
+                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('dashboard.coins')}</span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
                                 <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-1px' }}>{userProfile.coins}</span>
@@ -266,7 +276,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     gap: '0.5rem'
                                 }}
                             >
-                                <ShoppingBag size={18} /> Do'kon
+                                <ShoppingBag size={18} /> {t('dashboard.shop')}
                             </button>
                         </div>
                     </div>
@@ -301,7 +311,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 gap: '0.5rem',
                                 boxShadow: '0 4px 15px var(--accent-glow)'
                             }}>
-                                <Sparkles size={14} /> Kun so'zi
+                                <Sparkles size={14} /> {t('dashboard.wordOfTheDay')}
                             </div>
 
                             <div style={{ margin: '1rem 0' }}>
@@ -339,7 +349,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 {/* Quick Actions */}
                 <div style={{ marginBottom: '3rem' }}>
                     <h3 style={{ fontSize: '1.4rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <Zap className="text-accent" /> Mashg'ulotlar
+                        <Zap className="text-accent" /> {t('dashboard.exercises')}
                     </h3>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
@@ -348,10 +358,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <div style={{ marginBottom: '1.5rem', background: 'rgba(139, 92, 246, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
                                 <Play size={32} style={{ color: 'var(--accent)' }} />
                             </div>
-                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>Flesh-kartalar</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Klassik usulda so'zlarni yodlash. O'zingizni sinab ko'ring.</p>
+                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>{t('dashboard.flashcards')}</h4>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{t('dashboard.flashcardsDesc')}</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)', fontWeight: 600, fontSize: '0.9rem' }}>
-                                Boshlash <TrendingUp size={16} />
+                                {t('dashboard.startLearning')} <TrendingUp size={16} />
                             </div>
                         </div>
 
@@ -360,10 +370,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <div style={{ marginBottom: '1.5rem', background: 'rgba(34, 197, 94, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
                                 <Award size={32} style={{ color: 'var(--success)' }} />
                             </div>
-                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>Multiple Choice</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>4 ta variantdan to'g'risini topish orqali tezkor test.</p>
+                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>{t('dashboard.multipleChoice')}</h4>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{t('dashboard.multipleChoiceDesc')}</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--success)', fontWeight: 600, fontSize: '0.9rem' }}>
-                                Boshlash <TrendingUp size={16} />
+                                {t('dashboard.startLearning')} <TrendingUp size={16} />
                             </div>
                         </div>
 
@@ -372,10 +382,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <div style={{ marginBottom: '1.5rem', background: 'rgba(59, 130, 246, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
                                 <Keyboard size={32} style={{ color: '#3b82f6' }} />
                             </div>
-                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>Yozma Mashq</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Eshitish va to'g'ri yozishni mashq qilish.</p>
+                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>{t('dashboard.spelling')}</h4>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{t('dashboard.spellingDesc')}</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#3b82f6', fontWeight: 600, fontSize: '0.9rem' }}>
-                                Boshlash <TrendingUp size={16} />
+                                {t('dashboard.startLearning')} <TrendingUp size={16} />
                             </div>
                         </div>
 
@@ -384,10 +394,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <div style={{ marginBottom: '1.5rem', background: 'rgba(236, 72, 153, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
                                 <Mic size={32} style={{ color: '#ec4899' }} />
                             </div>
-                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>Talaffuz Mashqi</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>So'zlarni to'g'ri talaffuz qilishni mashq qiling.</p>
+                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>{t('dashboard.speaking')}</h4>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{t('dashboard.speakingDesc')}</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ec4899', fontWeight: 600, fontSize: '0.9rem' }}>
-                                Boshlash <TrendingUp size={16} />
+                                {t('dashboard.startLearning')} <TrendingUp size={16} />
                             </div>
                         </div>
 
@@ -396,10 +406,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <div style={{ marginBottom: '1.5rem', background: 'rgba(5, 150, 105, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
                                 <Sparkles size={32} style={{ color: '#059669' }} />
                             </div>
-                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>Ingliz tili fe'llari</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>250 ta eng ko'p qo'llaniladigan fe'llar va ularning shakllari (V1, V2, V3).</p>
+                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>{t('dashboard.verbsMode')}</h4>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{t('dashboard.verbsModeDesc')}</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#059669', fontWeight: 600, fontSize: '0.9rem' }}>
-                                Ko'rish <TrendingUp size={16} />
+                                {t('dashboard.viewMore')} <TrendingUp size={16} />
                             </div>
                         </div>
 
@@ -408,12 +418,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <div style={{ marginBottom: '1.5rem', background: 'rgba(245, 158, 11, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
                                 <BookOpen size={32} style={{ color: '#f59e0b' }} />
                             </div>
-                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>Grammatika</h4>
+                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>{t('dashboard.grammarMode')}</h4>
                             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                                Ingliz tili qoidalarini darslar, misollar va testlar orqali o'rganing.
+                                {t('dashboard.grammarModeDesc')}
                             </p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#f59e0b', fontWeight: 600, fontSize: '0.9rem' }}>
-                                O'rganish <TrendingUp size={16} />
+                                {t('dashboard.startLearning')} <TrendingUp size={16} />
                             </div>
                         </div>
                     </div>
@@ -422,14 +432,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 {/* Activity Chart & Footer */}
                 <div className="glass-panel" style={{ marginBottom: '3rem', padding: '2rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                        <h3 style={{ margin: 0, fontSize: '1.2rem' }}>Oxirgi 7 kunlik faollik</h3>
+                        <h3 style={{ margin: 0, fontSize: '1.2rem' }}>{t('dashboard.activityTitle')}</h3>
 
                         {/* Reset Button */}
                         <button
                             onClick={() => setShowResetConfirm(true)}
                             style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--error)', padding: '0.5rem 1rem', borderRadius: '0.5rem', cursor: 'pointer', fontSize: '0.85rem' }}
                         >
-                            <Trash2 size={14} /> Progressni tozalash
+                            <Trash2 size={14} /> {t('dashboard.resetProgress')}
                         </button>
                     </div>
 
@@ -524,9 +534,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                     }}>
                                         <Trash2 size={30} color="var(--error)" />
                                     </div>
-                                    <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-main)' }}>Rostdan ham tozalaymizmi?</h3>
+                                    <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--text-main)' }}>{t('resetModal.title')}</h3>
                                     <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: '1.5' }}>
-                                        Barcha yutuqlaringiz va o'rganilgan so'zlar statistikasi o'chib ketadi. Bu amalni ortga qaytarib bo'lmaydi.
+                                        {t('resetModal.desc')}
                                     </p>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                         <button
@@ -538,7 +548,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 color: 'var(--text-main)'
                                             }}
                                         >
-                                            Bekor qilish
+                                            {t('resetModal.cancel')}
                                         </button>
                                         <button
                                             onClick={() => {
@@ -552,7 +562,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                                 color: 'white'
                                             }}
                                         >
-                                            Ha, tozalash
+                                            {t('resetModal.confirm')}
                                         </button>
                                     </div>
                                 </motion.div>

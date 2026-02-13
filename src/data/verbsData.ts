@@ -7,9 +7,11 @@ export const verbsData: Verb[] = [
     "past": "was/were",
     "pastParticiple": "been",
     "translation_uz": "bo'lmoq",
+    "translation_ru": "быть",
     "level": "A1",
     "example_sentence": "I want to be a pilot.",
     "example_translation_uz": "Men uchuvchi bo'lishni xohlayman.",
+    "example_translation_ru": "Я хочу быть пилотом.",
     "isIrregular": true
   },
   {
@@ -18,9 +20,11 @@ export const verbsData: Verb[] = [
     "past": "had",
     "pastParticiple": "had",
     "translation_uz": "bor bo'lmoq (ega bo'lmoq)",
+    "translation_ru": "иметь (у меня есть)",
     "level": "A1",
     "example_sentence": "I have a big family.",
     "example_translation_uz": "Mening katta oilam bor.",
+    "example_translation_ru": "У меня большая семья.",
     "isIrregular": true
   },
   {
@@ -29,9 +33,11 @@ export const verbsData: Verb[] = [
     "past": "did",
     "pastParticiple": "done",
     "translation_uz": "qilmoq",
+    "translation_ru": "делать",
     "level": "A1",
     "example_sentence": "Do your homework.",
     "example_translation_uz": "Uyga vazifangni bajar.",
+    "example_translation_ru": "Делай свое домашнее задание.",
     "isIrregular": true
   },
   {
@@ -40,9 +46,11 @@ export const verbsData: Verb[] = [
     "past": "said",
     "pastParticiple": "said",
     "translation_uz": "aytmoq",
+    "translation_ru": "сказать",
     "level": "A1",
     "example_sentence": "Say hello to them.",
     "example_translation_uz": "Ularga salom deng.",
+    "example_translation_ru": "Скажи им привет.",
     "isIrregular": true
   },
   {
@@ -51,9 +59,11 @@ export const verbsData: Verb[] = [
     "past": "went",
     "pastParticiple": "gone",
     "translation_uz": "bormoq",
+    "translation_ru": "идти (ехать)",
     "level": "A1",
     "example_sentence": "Go to school.",
     "example_translation_uz": "Maktabga boring.",
+    "example_translation_ru": "Иди в школу.",
     "isIrregular": true
   },
   {
@@ -62,9 +72,11 @@ export const verbsData: Verb[] = [
     "past": "got",
     "pastParticiple": "got/gotten",
     "translation_uz": "olmoq (erishmoq)",
+    "translation_ru": "получать (становиться)",
     "level": "A1",
     "example_sentence": "I got a new phone.",
     "example_translation_uz": "Yangi telefon oldim.",
+    "example_translation_ru": "Я получил новый телефон.",
     "isIrregular": true
   },
   {
@@ -73,9 +85,11 @@ export const verbsData: Verb[] = [
     "past": "made",
     "pastParticiple": "made",
     "translation_uz": "tayyorlamoq (yasamoq)",
+    "translation_ru": "делать (создавать)",
     "level": "A1",
     "example_sentence": "Make some coffee.",
     "example_translation_uz": "Kofe tayyorlang.",
+    "example_translation_ru": "Приготовь немного кофе.",
     "isIrregular": true
   },
   {
@@ -84,9 +98,11 @@ export const verbsData: Verb[] = [
     "past": "knew",
     "pastParticiple": "known",
     "translation_uz": "bilmoq",
+    "translation_ru": "знать",
     "level": "A1",
     "example_sentence": "I know the answer.",
     "example_translation_uz": "Javobni bilaman.",
+    "example_translation_ru": "Я знаю ответ.",
     "isIrregular": true
   },
   {
@@ -95,9 +111,11 @@ export const verbsData: Verb[] = [
     "past": "took",
     "pastParticiple": "taken",
     "translation_uz": "olmoq",
+    "translation_ru": "брать",
     "level": "A1",
     "example_sentence": "Take a photo.",
     "example_translation_uz": "Rasmga tushiring.",
+    "example_translation_ru": "Сделай фото.",
     "isIrregular": true
   },
   {
@@ -106,9 +124,11 @@ export const verbsData: Verb[] = [
     "past": "saw",
     "pastParticiple": "seen",
     "translation_uz": "ko'rmoq",
+    "translation_ru": "видеть",
     "level": "A1",
     "example_sentence": "I see a bird.",
     "example_translation_uz": "Men qushni ko'ryapman.",
+    "example_translation_ru": "Я вижу птицу.",
     "isIrregular": true
   },
   {

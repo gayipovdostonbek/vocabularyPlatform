@@ -26,6 +26,7 @@ import { GrammarLesson } from './components/GrammarLesson';
 import { Settings } from './components/Settings';
 import { VerbsDashboard } from './components/VerbsDashboard';
 import { VerbGame } from './components/VerbGame';
+import { LanguageSwitcher } from './components/LanguageSwitcher';
 
 type StudyMode = 'flashcard' | 'quiz' | 'spelling' | 'speaking';
 
@@ -292,7 +293,9 @@ function App() {
           background: 'var(--glass-bg)',
           backdropFilter: 'blur(10px)',
           border: '1px solid var(--border-color)',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+          zIndex: 1000,
+          position: 'relative'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{
@@ -330,6 +333,8 @@ function App() {
                 {user.email.split('@')[0]}
               </div>
             )}
+
+            <LanguageSwitcher />
 
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}

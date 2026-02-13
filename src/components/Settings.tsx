@@ -1,6 +1,6 @@
-import React from 'react';
-import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { ArrowLeft } from 'lucide-react';
 
 interface SettingsProps {
     dailyGoal: number;
@@ -8,6 +8,7 @@ interface SettingsProps {
 }
 
 export const Settings: React.FC<SettingsProps> = ({ dailyGoal, onUpdateGoal }) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
 
     return (
@@ -17,12 +18,12 @@ export const Settings: React.FC<SettingsProps> = ({ dailyGoal, onUpdateGoal }) =
                 onClick={() => navigate('/')}
                 style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
             >
-                <ArrowLeft size={18} /> Dashboardga qaytish
+                <ArrowLeft size={18} /> {t('settings.backToDashboard')}
             </button>
 
             <div className="glass-panel" style={{ padding: '2rem', maxWidth: '400px', margin: '0 auto', textAlign: 'center' }}>
-                <h2 style={{ marginBottom: '1.5rem' }}>Kunlik maqsad</h2>
-                <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>Har kuni nechtadan yangi so'z yodlamoqchisiz?</p>
+                <h2 style={{ marginBottom: '1.5rem' }}>{t('settings.dailyGoal')}</h2>
+                <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>{t('settings.dailyGoalDesc')}</p>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '2rem' }}>
                     <button
                         className="btn btn-secondary"
@@ -40,7 +41,7 @@ export const Settings: React.FC<SettingsProps> = ({ dailyGoal, onUpdateGoal }) =
                         +
                     </button>
                 </div>
-                <button className="btn btn-primary" onClick={() => navigate('/')} style={{ width: '100%' }}>Saqlash va qaytish</button>
+                <button className="btn btn-primary" onClick={() => navigate('/')} style={{ width: '100%' }}>{t('settings.saveAndBack')}</button>
             </div>
         </div>
     );

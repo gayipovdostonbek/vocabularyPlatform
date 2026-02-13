@@ -3,39 +3,39 @@
 }
 
 :root {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --accent: #8b5cf6;
-  --accent-glow: rgba(139, 92, 246, 0.5);
-  --text-main: #f8fafc;
-  --text-muted: #cbd5e1;
-  --text-lowest: #94a3b8;
+  --bg-primary: #0a0f1e;
+  --bg-secondary: #161e31;
+  --accent: #6366f1;
+  --accent-glow: rgba(99, 102, 241, 0.3);
+  --text-main: #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-lowest: #64748b;
   --success: #10b981;
-  --error: #ef4444;
-  --glass-bg: rgba(30, 41, 59, 0.7);
-  --input-bg: rgba(15, 23, 42, 0.6);
-  --subtle-bg: rgba(255, 255, 255, 0.15);
-  --overlay-bg: rgba(0, 0, 0, 0.7);
+  --error: #f43f5e;
+  --glass-bg: rgba(22, 30, 49, 0.75);
+  --input-bg: rgba(10, 15, 30, 0.6);
+  --subtle-bg: rgba(255, 255, 255, 0.08);
+  --overlay-bg: rgba(2, 6, 23, 0.85);
   --border-color: rgba(255, 255, 255, 0.1);
   --gradient-start: #1e1b4b;
-  --gradient-end: #0f172a;
-  --card-front-bg: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
-  --card-back-bg: linear-gradient(135deg, rgba(76, 29, 149, 0.8) 0%, rgba(15, 23, 42, 0.95) 100%);
-  --card-subtle-bg: rgba(0, 0, 0, 0.2);
-  --title-gradient: linear-gradient(to bottom, #ffffff, #cbd5e1);
+  --gradient-end: #0a0f1e;
+  --card-front-bg: linear-gradient(135deg, rgba(22, 30, 49, 0.95) 0%, rgba(10, 15, 30, 0.98) 100%);
+  --card-back-bg: linear-gradient(135deg, #4338ca 0%, #0a0f1e 100%);
+  --card-subtle-bg: rgba(0, 0, 0, 0.3);
+  --title-gradient: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
   
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  line-height: 1.5;
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
   font-weight: 400;
 
   color-scheme: dark;
 
-  /* Level Colors */
-  --level-a1: #3b82f6;
-  --level-a2: #10b981;
-  --level-b1: #8b5cf6;
-  --level-b2: #f59e0b;
-  --level-c1: #ec4899;
+  /* Level Colors - Harmonized */
+  --level-a1: #60a5fa;
+  --level-a2: #34d399;
+  --level-b1: #a78bfa;
+  --level-b2: #fbbf24;
+  --level-c1: #f472b6;
 }
 
 body.light-theme {
