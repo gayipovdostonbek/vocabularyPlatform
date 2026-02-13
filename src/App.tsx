@@ -24,6 +24,8 @@ import { SpeakingQuiz } from './components/SpeakingQuiz';
 import { GrammarDashboard } from './components/GrammarDashboard';
 import { GrammarLesson } from './components/GrammarLesson';
 import { Settings } from './components/Settings';
+import { VerbsDashboard } from './components/VerbsDashboard';
+import { VerbGame } from './components/VerbGame';
 
 type StudyMode = 'flashcard' | 'quiz' | 'spelling' | 'speaking';
 
@@ -448,6 +450,8 @@ function App() {
 
             <Route path="/grammar" element={<GrammarDashboard />} />
             <Route path="/grammar/:topicId" element={<GrammarLesson />} />
+            <Route path="/verbs" element={<VerbsDashboard />} />
+            <Route path="/verbs/game" element={<VerbGame />} />
 
             <Route path="/study/:mode" element={
               studyQueue.length > 0 ? (

@@ -24,3 +24,15 @@ export interface UserProfile {
   activeTheme?: string;
   activeAvatar?: string;
 }
+
+export interface Verb {
+  id: number;
+  base: string;
+  past: string;
+  pastParticiple: string;
+  translation_uz: string;
+  level: string;
+  example_sentence: string;
+  example_translation_uz: string;
+  isIrregular: boolean;
+}

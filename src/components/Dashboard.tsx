@@ -391,21 +391,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             </div>
                         </div>
 
+                        {/* Verbs Section */}
+                        <div className="glass-panel mode-card interactable" onClick={() => navigate('/verbs')} style={{ padding: '2rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s ease' }}>
+                            <div style={{ marginBottom: '1.5rem', background: 'rgba(5, 150, 105, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
+                                <Sparkles size={32} style={{ color: '#059669' }} />
+                            </div>
+                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>Ingliz tili fe'llari</h4>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>250 ta eng ko'p qo'llaniladigan fe'llar va ularning shakllari (V1, V2, V3).</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#059669', fontWeight: 600, fontSize: '0.9rem' }}>
+                                Ko'rish <TrendingUp size={16} />
+                            </div>
+                        </div>
+
                         {/* Grammar Section */}
-                        <div className="glass-panel mode-card interactable" onClick={() => navigate('/grammar')} style={{ padding: '2rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s ease', gridColumn: '1 / -1' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                                <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '1rem', borderRadius: '1rem' }}>
-                                    <BookOpen size={32} style={{ color: '#f59e0b' }} />
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <h4 style={{ fontSize: '1.3rem', margin: '0 0 0.5rem 0' }}>Grammatika</h4>
-                                    <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', margin: 0 }}>
-                                        Ingliz tili qoidalarini o'rganing. Darslar, misollar va testlar orqali bilimingizni oshiring.
-                                    </p>
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#f59e0b', fontWeight: 600, fontSize: '1rem' }}>
-                                    Kirish <TrendingUp size={18} />
-                                </div>
+                        <div className="glass-panel mode-card interactable" onClick={() => navigate('/grammar')} style={{ padding: '2rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s ease' }}>
+                            <div style={{ marginBottom: '1.5rem', background: 'rgba(245, 158, 11, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
+                                <BookOpen size={32} style={{ color: '#f59e0b' }} />
+                            </div>
+                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>Grammatika</h4>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                                Ingliz tili qoidalarini darslar, misollar va testlar orqali o'rganing.
+                            </p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#f59e0b', fontWeight: 600, fontSize: '0.9rem' }}>
+                                O'rganish <TrendingUp size={16} />
                             </div>
                         </div>
                     </div>
