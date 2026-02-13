@@ -10,7 +10,6 @@ import {
     Volume2,
     Heart,
     Flame,
-    MousePointer2,
     Layers,
     Dna,
     Infinity as InfinityIcon
