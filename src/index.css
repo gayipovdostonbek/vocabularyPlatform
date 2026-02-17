@@ -428,3 +428,20 @@ body {
   color: var(--text-main);
   background: var(--subtle-bg);
 }
+
+.dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.dropdown-item:hover {
+  background: var(--subtle-bg) !important;
+  transform: translateX(4px);
+}
+
+.dropdown-item.logout:hover {
+  background: rgba(244, 63, 94, 0.1) !important;
+  color: #f43f5e !important;
+}

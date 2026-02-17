@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Award, Settings, Flame, Sparkles, Volume2, Keyboard, TrendingUp, Zap, Calendar, Check, Trash2, Mic, BookOpen, ShoppingBag, Coins } from 'lucide-react';
+import { Play, Award, Settings, Flame, Sparkles, Volume2, Keyboard, TrendingUp, Calendar, Check, Trash2, Mic, BookOpen, ShoppingBag, Coins, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Word } from '../types';
 import { soundService } from '../api/soundService';
 
-import { gamificationService } from '../utils/gamificationService';
+
 import type { UserProfile } from '../types';
 
 interface DashboardProps {
@@ -27,8 +27,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const navigate = useNavigate();
     const [showResetConfirm, setShowResetConfirm] = React.useState(false);
 
-    // Gamification Stats
-    const levelInfo = React.useMemo(() => gamificationService.getLevel(userProfile.xp), [userProfile.xp]);
 
     // Kun so'zini tanlash
     const wordOfTheDay = React.useMemo(() => {
@@ -88,344 +86,517 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <>
             <div className="dashboard animate-fade-in" style={{ textAlign: 'left', maxWidth: '1000px', margin: '0 auto', position: 'relative' }}>
 
-                {/* Level Banner */}
-                <div className="glass-panel" style={{
-                    marginBottom: '2rem',
-                    padding: '1.5rem',
-                    background: `linear-gradient(to right, var(--bg-secondary), ${level.color}20)`,
-                    border: `1px solid ${level.color}40`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: '1rem'
-                }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{ fontSize: '2.5rem', background: 'var(--subtle-bg)', padding: '0.5rem', borderRadius: '1rem', lineHeight: 1 }}>
+                {/* Level Banner - Reimagined */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ y: -4, scale: 1.01 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    className="glass-panel"
+                    style={{
+                        marginBottom: '2rem',
+                        padding: '1.5rem 2rem',
+                        background: `linear-gradient(135deg, var(--glass-bg) 0%, ${level.color}10 100%)`,
+                        border: `1px solid ${level.color}30`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: '2rem',
+                        boxShadow: `0 10px 30px -10px ${level.color}20`,
+                        borderRadius: '1.5rem'
+                    }}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                        <motion.div
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                            style={{
+                                fontSize: '2.5rem',
+                                background: 'var(--subtle-bg)',
+                                width: '72px',
+                                height: '72px',
+                                borderRadius: '1.25rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                lineHeight: 1
+                            }}
+                        >
                             {level.icon}
-                        </div>
+                        </motion.div>
                         <div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('dashboard.currentRank')}</div>
-                            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: level.color }}>{level.name}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 600, marginBottom: '0.25rem' }}>
+                                {t('dashboard.currentRank')}
+                            </div>
+                            <div style={{ fontSize: '1.75rem', fontWeight: 900, color: level.color, letterSpacing: '-0.5px' }}>
+                                {level.name}
+                            </div>
                         </div>
                     </div>
 
-                    <div style={{ flex: 1, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                            <span>{t('dashboard.rankProgress')}</span>
-                            <span>{learned} / {nextLevelTarget} XP</span>
+                    <div style={{ flex: '1', minWidth: '280px', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: 600 }}>
+                                {t('dashboard.rankProgress')}
+                            </span>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+                                <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>{learned}</span> / {nextLevelTarget} XP
+                            </span>
                         </div>
-                        <div style={{ height: '8px', background: 'var(--subtle-bg)', borderRadius: '4px', overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: `${xpProgress}%`, background: level.color, borderRadius: '4px', transition: 'width 1s ease' }} />
+                        <div style={{ height: '12px', background: 'var(--subtle-bg)', borderRadius: '6px', overflow: 'hidden', padding: '2px', border: '1px solid var(--border-color)' }}>
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${xpProgress}%` }}
+                                transition={{ duration: 1.5, ease: 'circOut' }}
+                                style={{
+                                    height: '100%',
+                                    background: `linear-gradient(90deg, ${level.color}, #ffffff50)`,
+                                    borderRadius: '4px',
+                                    boxShadow: `0 0 15px ${level.color}50`
+                                }}
+                            />
                         </div>
                     </div>
-                </div>
+                </motion.div>
 
-                {/* Header Stats Grid */}
-                <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+                {/* Header Stats Grid - Premium Layout */}
+                <div className="dashboard-grid" style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                    gap: '1.5rem',
+                    marginBottom: '2.5rem'
+                }}>
 
                     {/* Main Progress Card */}
-                    <div className="glass-panel" style={{ padding: '2rem', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', top: 0, right: 0, padding: '1.5rem', opacity: 0.1 }}>
-                            <TrendingUp size={120} />
+                    <motion.div
+                        whileHover={{ y: -4, scale: 1.01 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        className="glass-panel"
+                        style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden', borderRadius: '1.5rem' }}
+                    >
+                        <div style={{ position: 'absolute', top: '-10%', right: '-5%', padding: '1.5rem', opacity: 0.05 }}>
+                            <TrendingUp size={160} />
                         </div>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
-                            <div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                                    <Calendar size={16} className="text-secondary" />
-                                    <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('dashboard.dailyGoal')}</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative', zIndex: 1, marginBottom: '1.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '0.6rem', borderRadius: '0.75rem' }}>
+                                    <Calendar size={20} style={{ color: 'var(--accent)' }} />
                                 </div>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-                                    <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-1px' }}>{learnedToday}</span>
-                                    <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>/ {dailyGoal}</span>
-                                </div>
+                                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                    {t('dashboard.dailyGoal')}
+                                </span>
                             </div>
-                            <button onClick={() => navigate('/settings')} className="btn-icon" style={{ background: 'var(--subtle-bg)', padding: '0.5rem', borderRadius: '0.75rem', height: 'fit-content' }}>
-                                <Settings size={20} style={{ color: 'var(--text-muted)' }} />
+                            <button
+                                onClick={() => navigate('/settings')}
+                                className="interactable"
+                                style={{
+                                    background: 'var(--subtle-bg)',
+                                    border: '1px solid var(--border-color)',
+                                    color: 'var(--text-muted)',
+                                    width: '36px',
+                                    height: '36px',
+                                    borderRadius: '0.75rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                <Settings size={18} />
                             </button>
                         </div>
 
-                        <div style={{ marginTop: '1.5rem', position: 'relative', zIndex: 1 }}>
-                            <div style={{ background: 'rgba(255,255,255,0.1)', height: '10px', borderRadius: '5px', overflow: 'hidden', marginBottom: '0.75rem' }}>
+                        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '0.5rem' }}>
+                                <span style={{ fontSize: '3.5rem', fontWeight: 900, color: 'var(--text-main)', letterSpacing: '-2px' }}>{learnedToday}</span>
+                                <span style={{ fontSize: '1.25rem', color: 'var(--text-muted)', fontWeight: 500 }}>/ {dailyGoal}</span>
+                            </div>
+
+                            <div style={{ marginTop: '1rem', background: 'var(--subtle-bg)', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
                                 <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: `${progress}%` }}
                                     transition={{ duration: 1, ease: 'easeOut' }}
-                                    style={{ height: '100%', background: 'var(--accent)', boxShadow: '0 0 20px var(--accent-glow)' }}
+                                    style={{
+                                        height: '100%',
+                                        background: 'linear-gradient(90deg, var(--accent) 0%, #7c3aed 100%)',
+                                        boxShadow: '0 0 15px var(--accent-glow)'
+                                    }}
                                 />
                             </div>
-                            <p style={{ margin: 0, fontSize: '0.9rem', color: progress >= 100 ? 'var(--success)' : 'var(--text-muted)' }}>
+                            <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: progress >= 100 ? 'var(--success)' : 'var(--text-muted)', fontWeight: 500 }}>
                                 {progress >= 100 ?
-                                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Check size={16} /> {t('dashboard.goalAchieved')}</span> :
+                                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}><Check size={16} strokeWidth={3} /> {t('dashboard.goalAchieved')}</span> :
                                     t('dashboard.remainingWords', { count: dailyGoal - learnedToday })
                                 }
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Word Statistics Card - FIRST */}
-                    <div className="glass-panel" onClick={() => navigate('/manage')} style={{ padding: '2rem', cursor: 'pointer', transition: 'all 0.3s', border: '1px solid transparent', position: 'relative', overflow: 'hidden' }}
-                        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
-                        onMouseLeave={e => e.currentTarget.style.borderColor = 'transparent'}>
-                        <div style={{ position: 'absolute', top: 0, right: 0, padding: '1.5rem', opacity: 0.1 }}>
-                            <BookOpen size={120} />
-                        </div>
-
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                                <BookOpen size={16} className="text-secondary" />
-                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('dashboard.totalWords')}</span>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
-                                <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-1px' }}>{total}</span>
+                        </div>
+                    </motion.div>
+
+                    {/* Word Statistics Card */}
+                    <motion.div
+                        whileHover={{ y: -4, scale: 1.01 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        className="glass-panel"
+                        onClick={() => navigate('/manage')}
+                        style={{ padding: '1.5rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', borderRadius: '1.5rem' }}
+                    >
+                        <div style={{ position: 'absolute', top: '-10%', right: '-5%', opacity: 0.05 }}>
+                            <BookOpen size={160} />
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
+                            <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '0.6rem', borderRadius: '0.75rem' }}>
+                                <BookOpen size={20} style={{ color: '#3b82f6' }} />
                             </div>
-                            <div style={{ display: 'flex', gap: '2rem', marginTop: '1rem' }}>
-                                <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--success)', marginBottom: '0.25rem' }}>{t('dashboard.learned')}</div>
-                                    <div style={{ fontWeight: 700, fontSize: '1.5rem' }}>{learned}</div>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                {t('dashboard.totalWords')}
+                            </span>
+                        </div>
+
+                        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+                            <div style={{ fontSize: '3.5rem', fontWeight: 900, color: 'var(--text-main)', letterSpacing: '-2px', marginBottom: '1rem' }}>{total}</div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: 'var(--subtle-bg)', padding: '0.75rem', borderRadius: '1rem' }}>
+                                <div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--success)', fontWeight: 700, textTransform: 'uppercase' }}>{t('dashboard.learned')}</div>
+                                    <div style={{ fontWeight: 800, fontSize: '1.25rem' }}>{learned}</div>
                                 </div>
-                                <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '0.75rem', color: '#3b82f6', marginBottom: '0.25rem' }}>{t('dashboard.learning')}</div>
-                                    <div style={{ fontWeight: 700, fontSize: '1.5rem' }}>{learning}</div>
+                                <div style={{ borderLeft: '1px solid var(--border-color)' }}>
+                                    <div style={{ fontSize: '0.75rem', color: '#3b82f6', fontWeight: 700, textTransform: 'uppercase' }}>{t('dashboard.learning')}</div>
+                                    <div style={{ fontWeight: 800, fontSize: '1.25rem' }}>{learning}</div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    {/* Level Card */}
-                    <div className="glass-panel" style={{ padding: '2rem', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', top: 0, right: 0, padding: '1.5rem', opacity: 0.1 }}>
-                            <Award size={120} />
-                        </div>
-
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                                <Award size={16} className="text-secondary" />
-                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('dashboard.rank')}</span>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
-                                <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-1px' }}>{levelInfo.current.level}</span>
-                                <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>/ 10</span>
-                            </div>
-                            <div style={{ fontSize: '0.9rem', color: 'var(--accent)', fontWeight: 600 }}>{levelInfo.current.title}</div>
-                            <div style={{ marginTop: '1rem', background: 'rgba(255,255,255,0.1)', height: '6px', borderRadius: '3px', overflow: 'hidden' }}>
-                                <motion.div
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${levelInfo.progress}%` }}
-                                    transition={{ duration: 1, ease: 'easeOut' }}
-                                    style={{ height: '100%', background: 'var(--accent)', boxShadow: '0 0 10px var(--accent-glow)' }}
-                                />
-                            </div>
-                            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                {userProfile.xp} / {levelInfo.next.minXP} XP
-                            </div>
-                        </div>
-                    </div>
+                    </motion.div>
 
                     {/* Streak Card */}
-                    <div className="glass-panel" style={{ padding: '2rem', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', top: 0, right: 0, padding: '1.5rem', opacity: 0.1 }}>
-                            <Flame size={120} />
+                    <motion.div
+                        whileHover={{ y: -4, scale: 1.01 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        className="glass-panel"
+                        style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden', borderRadius: '1.5rem' }}
+                    >
+                        <div style={{ position: 'absolute', top: '-10%', right: '-5%', opacity: 0.05 }}>
+                            <Flame size={160} />
                         </div>
 
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                                <Flame size={16} className="text-secondary" />
-                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('dashboard.streak')}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
+                            <div style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '0.6rem', borderRadius: '0.75rem' }}>
+                                <Flame size={20} style={{ color: '#f59e0b' }} />
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
-                                <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-1px' }}>{streak}</span>
-                                <span style={{ fontSize: '1.2rem', color: 'var(--text-muted)' }}>{t('days.sun').toLowerCase().endsWith('k') ? '' : ''}</span>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                {t('dashboard.streak')}
+                            </span>
+                        </div>
+
+                        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '0.5rem' }}>
+                                <motion.span
+                                    animate={streak > 0 ? { scale: [1, 1.1, 1] } : {}}
+                                    transition={{ duration: 2, repeat: Infinity }}
+                                    style={{ fontSize: '3.5rem', fontWeight: 900, color: streak > 0 ? '#f59e0b' : 'var(--text-main)', letterSpacing: '-2px' }}
+                                >
+                                    {streak}
+                                </motion.span>
+                                <span style={{ fontSize: '1.5rem', color: '#f59e0b' }}>🔥</span>
                             </div>
-                            <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+                            <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 500 }}>
                                 {streak > 0 ? t('dashboard.streakGood', { count: streak }) : t('dashboard.streakStart')}
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Coins Card */}
-                    <div className="glass-panel" style={{ padding: '2rem', position: 'relative', overflow: 'hidden' }}>
-                        <div style={{ position: 'absolute', top: 0, right: 0, padding: '1.5rem', opacity: 0.1 }}>
-                            <Coins size={120} />
+                    <motion.div
+                        whileHover={{ y: -4, scale: 1.01 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        className="glass-panel"
+                        style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden', borderRadius: '1.5rem' }}
+                    >
+                        <div style={{ position: 'absolute', top: '-10%', right: '-5%', opacity: 0.05 }}>
+                            <Coins size={160} />
                         </div>
 
-                        <div style={{ position: 'relative', zIndex: 1 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                                <Coins size={16} className="text-secondary" />
-                                <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('dashboard.coins')}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', position: 'relative', zIndex: 1 }}>
+                            <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '0.6rem', borderRadius: '0.75rem' }}>
+                                <Coins size={20} style={{ color: 'var(--success)' }} />
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
-                                <span style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-1px' }}>{userProfile.coins}</span>
-                            </div>
+                            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                                {t('dashboard.coins')}
+                            </span>
+                        </div>
+
+                        <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
+                            <div style={{ fontSize: '3.5rem', fontWeight: 900, color: 'var(--text-main)', letterSpacing: '-2px', marginBottom: '1rem' }}>{userProfile.coins}</div>
                             <button
                                 onClick={onOpenShop}
-                                className="btn"
+                                className="interactable"
                                 style={{
                                     width: '100%',
                                     background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)',
                                     border: 'none',
                                     color: 'white',
                                     padding: '0.75rem',
-                                    borderRadius: '0.5rem',
+                                    borderRadius: '1rem',
                                     cursor: 'pointer',
-                                    fontWeight: 600,
+                                    fontWeight: 700,
+                                    fontSize: '0.9rem',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    gap: '0.5rem'
+                                    gap: '0.6rem',
+                                    boxShadow: '0 8px 15px -3px rgba(124, 58, 237, 0.4)'
                                 }}
                             >
                                 <ShoppingBag size={18} /> {t('dashboard.shop')}
                             </button>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
 
-                {/* Word of the Day Hero Card */}
+                {/* Word of the Day Hero Section */}
                 {wordOfTheDay && (
-                    <div className="glass-panel" style={{
-                        marginBottom: '2.5rem',
-                        padding: '2.5rem',
-                        background: 'var(--card-front-bg)',
-                        border: '1px solid rgba(139, 92, 246, 0.3)',
-                        position: 'relative',
-                        overflow: 'hidden'
-                    }}>
-                        <div style={{ position: 'absolute', top: '-20px', right: '-20px', opacity: 0.1, transform: 'rotate(15deg)' }}>
-                            <Sparkles size={200} />
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="glass-panel"
+                        style={{
+                            marginBottom: '3rem',
+                            padding: '3rem 2rem',
+                            background: 'var(--glass-bg)',
+                            border: '1px solid var(--border-color)',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            borderRadius: '2rem',
+                            textAlign: 'center',
+                            boxShadow: '0 25px 50px -12px rgba(0,0,0,0.4)'
+                        }}
+                    >
+                        <div style={{ position: 'absolute', top: '-10%', right: '-5%', opacity: 0.05, transform: 'rotate(15deg)' }}>
+                            <Sparkles size={240} />
                         </div>
 
-                        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '1rem' }}>
-                            <div style={{
-                                background: 'var(--accent)',
-                                color: 'white',
-                                padding: '0.4rem 1rem',
-                                borderRadius: '2rem',
-                                fontSize: '0.8rem',
-                                fontWeight: 600,
-                                letterSpacing: '1px',
-                                textTransform: 'uppercase',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.5rem',
-                                boxShadow: '0 4px 15px var(--accent-glow)'
-                            }}>
-                                <Sparkles size={14} /> {t('dashboard.wordOfTheDay')}
-                            </div>
+                        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <motion.div
+                                animate={{ y: [0, -5, 0] }}
+                                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                                style={{
+                                    background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)',
+                                    color: 'white',
+                                    padding: '0.5rem 1.25rem',
+                                    borderRadius: '2rem',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 800,
+                                    letterSpacing: '2px',
+                                    textTransform: 'uppercase',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.6rem',
+                                    boxShadow: '0 10px 20px -5px var(--accent-glow)',
+                                    marginBottom: '2rem'
+                                }}
+                            >
+                                <Sparkles size={16} /> {t('dashboard.wordOfTheDay')}
+                            </motion.div>
 
-                            <div style={{ margin: '1rem 0' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-                                    <h1 style={{ fontSize: '3.5rem', fontWeight: 800, margin: 0, lineHeight: 1, color: 'var(--text-main)' }}>
+                            <div style={{ marginBottom: '2.5rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', marginBottom: '0.5rem' }}>
+                                    <h2 style={{ fontSize: 'min(5rem, 12vw)', fontWeight: 900, margin: 0, lineHeight: 0.9, color: 'var(--text-main)', letterSpacing: '-3px' }}>
                                         {wordOfTheDay.english}
-                                    </h1>
-                                    <button onClick={() => soundService.speak(wordOfTheDay.english)} className="btn-icon-large" style={{ background: 'var(--subtle-bg)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-main)' }}>
-                                        <Volume2 size={20} />
+                                    </h2>
+                                    <button
+                                        onClick={() => soundService.speak(wordOfTheDay.english)}
+                                        className="interactable"
+                                        style={{
+                                            background: 'var(--subtle-bg)',
+                                            border: '1px solid var(--border-color)',
+                                            borderRadius: '50%',
+                                            width: '56px',
+                                            height: '56px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            cursor: 'pointer',
+                                            color: 'var(--accent)'
+                                        }}
+                                    >
+                                        <Volume2 size={24} strokeWidth={2.5} />
                                     </button>
                                 </div>
-                                <div style={{ fontSize: '1.8rem', color: 'var(--accent)', fontWeight: 500 }}>{wordOfTheDay.uzbek}</div>
+                                <div style={{ fontSize: '2.25rem', color: 'var(--accent)', fontWeight: 600, letterSpacing: '-1px' }}>
+                                    {wordOfTheDay.uzbek}
+                                </div>
                             </div>
 
                             {wordOfTheDay.example && (
-                                <div style={{ maxWidth: '600px', background: 'var(--subtle-bg)', padding: '1rem 1.5rem', borderRadius: '1rem', border: '1px solid var(--border-color)' }}>
-                                    <div style={{ fontSize: '1.1rem', fontStyle: 'italic', marginBottom: '0.5rem' }}>"{wordOfTheDay.example}"</div>
-                                    {wordOfTheDay.exampleTranslation && <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>{wordOfTheDay.exampleTranslation}</div>}
+                                <div style={{
+                                    maxWidth: '700px',
+                                    background: 'var(--subtle-bg)',
+                                    padding: '1.5rem 2rem',
+                                    borderRadius: '1.5rem',
+                                    border: '1px solid var(--border-color)',
+                                    position: 'relative'
+                                }}>
+                                    <div style={{ fontSize: '1.25rem', fontStyle: 'italic', color: 'var(--text-main)', marginBottom: '0.75rem', lineHeight: 1.5 }}>
+                                        "{wordOfTheDay.example}"
+                                    </div>
+                                    {wordOfTheDay.exampleTranslation && (
+                                        <div style={{ fontSize: '1rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+                                            {wordOfTheDay.exampleTranslation}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
-                            <div className="mastery-indicator" style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '2.5rem' }}>
                                 {[0, 1, 2, 3].map(lvl => (
-                                    <div key={lvl} style={{
-                                        width: '12px', height: '12px', borderRadius: '50%',
-                                        background: (wordOfTheDay.masteryLevel || 0) > lvl ? 'var(--success)' : 'var(--border-color)',
-                                        boxShadow: (wordOfTheDay.masteryLevel || 0) > lvl ? '0 0 10px rgba(34, 197, 94, 0.5)' : 'none'
-                                    }} />
+                                    <motion.div
+                                        key={lvl}
+                                        animate={(wordOfTheDay.masteryLevel || 0) > lvl ? { scale: [1, 1.2, 1] } : {}}
+                                        transition={{ delay: lvl * 0.1 }}
+                                        style={{
+                                            width: '14px',
+                                            height: '14px',
+                                            borderRadius: '50%',
+                                            background: (wordOfTheDay.masteryLevel || 0) > lvl ? 'var(--success)' : 'var(--border-color)',
+                                            boxShadow: (wordOfTheDay.masteryLevel || 0) > lvl ? '0 0 15px rgba(34, 197, 94, 0.6)' : 'none'
+                                        }}
+                                    />
                                 ))}
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 )}
 
-                {/* Quick Actions */}
-                <div style={{ marginBottom: '3rem' }}>
-                    <h3 style={{ fontSize: '1.4rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <Zap className="text-accent" /> {t('dashboard.exercises')}
+                {/* Quick Actions - Reimagined Grid */}
+                <div style={{ marginBottom: '4rem' }}>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--text-main)' }}>
+                        <div style={{ background: 'var(--accent)', width: '4px', height: '24px', borderRadius: '2px' }} />
+                        {t('dashboard.exercises')}
                     </h3>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                        gap: '1.5rem'
+                    }}>
                         {/* Flashcards */}
-                        <div className="glass-panel mode-card interactable" onClick={() => onStart('flashcard')} style={{ padding: '2rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s ease' }}>
-                            <div style={{ marginBottom: '1.5rem', background: 'rgba(139, 92, 246, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
+                        <motion.div
+                            whileHover={{ y: -4, scale: 1.01 }}
+                            whileTap={{ scale: 0.98 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            className="glass-panel interactable"
+                            onClick={() => onStart('flashcard')}
+                            style={{ padding: '2rem', cursor: 'pointer', borderRadius: '1.75rem', position: 'relative', overflow: 'hidden' }}
+                        >
+                            <div style={{ marginBottom: '1.5rem', background: 'rgba(139, 92, 246, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem' }}>
                                 <Play size={32} style={{ color: 'var(--accent)' }} />
                             </div>
-                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>{t('dashboard.flashcards')}</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{t('dashboard.flashcardsDesc')}</p>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)', fontWeight: 600, fontSize: '0.9rem' }}>
-                                {t('dashboard.startLearning')} <TrendingUp size={16} />
+                            <h4 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.75rem 0' }}>{t('dashboard.flashcards')}</h4>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>{t('dashboard.flashcardsDesc')}</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--accent)', fontWeight: 700, fontSize: '0.95rem' }}>
+                                {t('dashboard.startLearning')} <ArrowLeft size={18} style={{ transform: 'rotate(180deg)' }} />
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Quiz */}
-                        <div className="glass-panel mode-card interactable" onClick={() => onStart('quiz')} style={{ padding: '2rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s ease' }}>
-                            <div style={{ marginBottom: '1.5rem', background: 'rgba(34, 197, 94, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
+                        <motion.div
+                            whileHover={{ y: -4, scale: 1.01 }}
+                            whileTap={{ scale: 0.98 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            className="glass-panel interactable"
+                            onClick={() => onStart('quiz')}
+                            style={{ padding: '2rem', cursor: 'pointer', borderRadius: '1.75rem', position: 'relative', overflow: 'hidden' }}
+                        >
+                            <div style={{ marginBottom: '1.5rem', background: 'rgba(16, 185, 129, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem' }}>
                                 <Award size={32} style={{ color: 'var(--success)' }} />
                             </div>
-                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>{t('dashboard.multipleChoice')}</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{t('dashboard.multipleChoiceDesc')}</p>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--success)', fontWeight: 600, fontSize: '0.9rem' }}>
-                                {t('dashboard.startLearning')} <TrendingUp size={16} />
+                            <h4 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.75rem 0' }}>{t('dashboard.multipleChoice')}</h4>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>{t('dashboard.multipleChoiceDesc')}</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--success)', fontWeight: 700, fontSize: '0.95rem' }}>
+                                {t('dashboard.startLearning')} <ArrowLeft size={18} style={{ transform: 'rotate(180deg)' }} />
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Spelling */}
-                        <div className="glass-panel mode-card interactable" onClick={() => onStart('spelling')} style={{ padding: '2rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s ease' }}>
-                            <div style={{ marginBottom: '1.5rem', background: 'rgba(59, 130, 246, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
+                        <motion.div
+                            whileHover={{ y: -4, scale: 1.01 }}
+                            whileTap={{ scale: 0.98 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            className="glass-panel interactable"
+                            onClick={() => onStart('spelling')}
+                            style={{ padding: '2rem', cursor: 'pointer', borderRadius: '1.75rem', position: 'relative', overflow: 'hidden' }}
+                        >
+                            <div style={{ marginBottom: '1.5rem', background: 'rgba(59, 130, 246, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem' }}>
                                 <Keyboard size={32} style={{ color: '#3b82f6' }} />
                             </div>
-                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>{t('dashboard.spelling')}</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{t('dashboard.spellingDesc')}</p>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#3b82f6', fontWeight: 600, fontSize: '0.9rem' }}>
-                                {t('dashboard.startLearning')} <TrendingUp size={16} />
+                            <h4 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.75rem 0' }}>{t('dashboard.spelling')}</h4>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>{t('dashboard.spellingDesc')}</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#3b82f6', fontWeight: 700, fontSize: '0.95rem' }}>
+                                {t('dashboard.startLearning')} <ArrowLeft size={18} style={{ transform: 'rotate(180deg)' }} />
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Speaking Practice */}
-                        <div className="glass-panel mode-card interactable" onClick={() => onStart('speaking')} style={{ padding: '2rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s ease' }}>
-                            <div style={{ marginBottom: '1.5rem', background: 'rgba(236, 72, 153, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
+                        <motion.div
+                            whileHover={{ y: -4, scale: 1.01 }}
+                            whileTap={{ scale: 0.98 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            className="glass-panel interactable"
+                            onClick={() => onStart('speaking')}
+                            style={{ padding: '2rem', cursor: 'pointer', borderRadius: '1.75rem', position: 'relative', overflow: 'hidden' }}
+                        >
+                            <div style={{ marginBottom: '1.5rem', background: 'rgba(236, 72, 153, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem' }}>
                                 <Mic size={32} style={{ color: '#ec4899' }} />
                             </div>
-                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>{t('dashboard.speaking')}</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{t('dashboard.speakingDesc')}</p>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ec4899', fontWeight: 600, fontSize: '0.9rem' }}>
-                                {t('dashboard.startLearning')} <TrendingUp size={16} />
+                            <h4 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.75rem 0' }}>{t('dashboard.speaking')}</h4>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>{t('dashboard.speakingDesc')}</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#ec4899', fontWeight: 700, fontSize: '0.95rem' }}>
+                                {t('dashboard.startLearning')} <ArrowLeft size={18} style={{ transform: 'rotate(180deg)' }} />
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Verbs Section */}
-                        <div className="glass-panel mode-card interactable" onClick={() => navigate('/verbs')} style={{ padding: '2rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s ease' }}>
-                            <div style={{ marginBottom: '1.5rem', background: 'rgba(5, 150, 105, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
-                                <Sparkles size={32} style={{ color: '#059669' }} />
+                        <motion.div
+                            whileHover={{ y: -4, scale: 1.01 }}
+                            whileTap={{ scale: 0.98 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            className="glass-panel interactable"
+                            onClick={() => navigate('/verbs')}
+                            style={{ padding: '2rem', cursor: 'pointer', borderRadius: '1.75rem', position: 'relative', overflow: 'hidden' }}
+                        >
+                            <div style={{ marginBottom: '1.5rem', background: 'rgba(16, 185, 129, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem' }}>
+                                <Sparkles size={32} style={{ color: 'var(--success)' }} />
                             </div>
-                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>{t('dashboard.verbsMode')}</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{t('dashboard.verbsModeDesc')}</p>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#059669', fontWeight: 600, fontSize: '0.9rem' }}>
-                                {t('dashboard.viewMore')} <TrendingUp size={16} />
+                            <h4 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.75rem 0' }}>{t('dashboard.verbsMode')}</h4>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>{t('dashboard.verbsModeDesc')}</p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--success)', fontWeight: 700, fontSize: '0.95rem' }}>
+                                {t('dashboard.viewMore')} <ArrowLeft size={18} style={{ transform: 'rotate(180deg)' }} />
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Grammar Section */}
-                        <div className="glass-panel mode-card interactable" onClick={() => navigate('/grammar')} style={{ padding: '2rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.05)', transition: 'all 0.3s ease' }}>
-                            <div style={{ marginBottom: '1.5rem', background: 'rgba(245, 158, 11, 0.1)', width: 'fit-content', padding: '1rem', borderRadius: '1rem' }}>
+                        <motion.div
+                            whileHover={{ y: -4, scale: 1.01 }}
+                            whileTap={{ scale: 0.98 }}
+                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            className="glass-panel interactable"
+                            onClick={() => navigate('/grammar')}
+                            style={{ padding: '2rem', cursor: 'pointer', borderRadius: '1.75rem', position: 'relative', overflow: 'hidden' }}
+                        >
+                            <div style={{ marginBottom: '1.5rem', background: 'rgba(245, 158, 11, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem' }}>
                                 <BookOpen size={32} style={{ color: '#f59e0b' }} />
                             </div>
-                            <h4 style={{ fontSize: '1.2rem', margin: '0 0 0.5rem 0' }}>{t('dashboard.grammarMode')}</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                            <h4 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.75rem 0' }}>{t('dashboard.grammarMode')}</h4>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>
                                 {t('dashboard.grammarModeDesc')}
                             </p>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#f59e0b', fontWeight: 600, fontSize: '0.9rem' }}>
-                                {t('dashboard.startLearning')} <TrendingUp size={16} />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#f59e0b', fontWeight: 700, fontSize: '0.95rem' }}>
+                                {t('dashboard.startLearning')} <ArrowLeft size={18} style={{ transform: 'rotate(180deg)' }} />
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
 
@@ -471,15 +642,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                 <style>{`
                 .interactable:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-                    border-color: rgba(255,255,255,0.1) !important;
+                    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.4);
+                    border-color: rgba(255,255,255,0.15) !important;
                 }
                 .text-accent { color: var(--accent); }
                 .text-secondary { color: var(--text-muted); }
+
+                @media (max-width: 1024px) {
+                    .dashboard-grid { grid-template-columns: 1fr 1fr !important; }
+                }
                 
-                @media (max-width: 768px) {
+                @media (max-width: 640px) {
                     .dashboard-grid { grid-template-columns: 1fr !important; }
+                    .dashboard { padding: 0 1rem; }
+                    header { padding: 1rem !important; }
                 }
             `}</style>
             </div>

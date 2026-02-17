@@ -4,6 +4,7 @@ import {
     createUserWithEmailAndPassword, 
     signOut as firebaseSignOut, 
     onAuthStateChanged,
+    updatePassword,
     type User
 } from 'firebase/auth';
 
@@ -24,5 +25,9 @@ export const authService = {
 
     onAuthChange(callback: (user: User | null) => void) {
         return onAuthStateChanged(auth, callback);
+    },
+
+    async changePassword(user: User, newPassword: string): Promise<void> {
+        await updatePassword(user, newPassword);
     }
 };

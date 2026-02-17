@@ -8,7 +8,8 @@ import { firebaseService } from './api/firebaseService';
 import { authService } from './api/authService';
 import { Auth } from './components/Auth';
 import type { Word } from './types';
-import { ArrowLeft, LogOut, CheckCircle, Sun, Moon } from 'lucide-react';
+import { ArrowLeft, LogOut, CheckCircle, Sun, Moon, Settings as SettingsIcon, ChevronDown, User as UserIcon } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { User } from 'firebase/auth';
 import confetti from 'canvas-confetti';
 import { soundService } from './api/soundService';
@@ -56,6 +57,18 @@ function App() {
   const [studyMode, setStudyMode] = useState<StudyMode>('flashcard');
   const [studyQueue, setStudyQueue] = useState<Word[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  // Profile Menu click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isProfileOpen && !(event.target as Element).closest('.profile-menu-container')) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isProfileOpen]);
 
   useEffect(() => {
     const unsubscribe = authService.onAuthChange((u) => {
@@ -317,25 +330,6 @@ function App() {
           </div>
 
           <div className="user-nav" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            {user.email && (
-              <div style={{
-                padding: '0.5rem 1rem',
-                background: 'var(--subtle-bg)',
-                borderRadius: '2rem',
-                fontSize: '0.85rem',
-                color: 'var(--text-main)',
-                border: '1px solid var(--border-color)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--success)' }} />
-                {user.email.split('@')[0]}
-              </div>
-            )}
-
-            <LanguageSwitcher />
-
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
               style={{
@@ -357,26 +351,132 @@ function App() {
               {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
             </button>
 
-            <button
-              onClick={handleLogout}
-              style={{
-                background: 'rgba(239, 68, 68, 0.1)',
-                border: '1px solid rgba(239, 68, 68, 0.2)',
-                color: 'var(--error)',
-                cursor: 'pointer',
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s'
-              }}
-              className="interactable"
-              title="Chiqish"
-            >
-              <LogOut size={20} />
-            </button>
+            <LanguageSwitcher />
+
+            <div className="profile-menu-container" style={{ position: 'relative' }}>
+              <button
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+                style={{
+                  padding: '0.4rem 0.8rem 0.4rem 0.5rem',
+                  background: 'var(--subtle-bg)',
+                  borderRadius: '2rem',
+                  fontSize: '0.9rem',
+                  color: 'var(--text-main)',
+                  border: '1px solid var(--border-color)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.6rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  minWidth: 'fit-content'
+                }}
+                className="interactable"
+              >
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                  <UserIcon size={16} color="white" />
+                </div>
+                <span className="user-email" style={{ fontWeight: 600 }}>
+                  {user.email ? user.email.split('@')[0] : 'Profil'}
+                </span>
+                <ChevronDown size={16} style={{
+                  transform: isProfileOpen ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.3s ease',
+                  opacity: 0.7
+                }} />
+              </button>
+
+              <AnimatePresence>
+                {isProfileOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 0.5rem)',
+                      right: 0,
+                      width: '240px',
+                      background: 'var(--glass-bg)',
+                      backdropFilter: 'blur(16px)',
+                      borderRadius: '1.25rem',
+                      border: '1px solid var(--border-color)',
+                      boxShadow: '0 20px 25px -5px rgba(0,0,0,0.2), 0 10px 10px -5px rgba(0,0,0,0.1)',
+                      zIndex: 1100,
+                      padding: '0.5rem',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <div style={{
+                      padding: '0.75rem 1rem',
+                      borderBottom: '1px solid var(--border-color)',
+                      marginBottom: '0.5rem'
+                    }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: '0.2rem' }}>Hisob</div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.email}</div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        navigate('/settings');
+                        setIsProfileOpen(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '0.8rem 1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'var(--text-main)',
+                        borderRadius: '0.75rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        textAlign: 'left'
+                      }}
+                      className="dropdown-item"
+                    >
+                      <SettingsIcon size={18} style={{ color: 'var(--accent)' }} />
+                      <span style={{ fontWeight: 500 }}>Sozlamalar</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        handleLogout();
+                        setIsProfileOpen(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        padding: '0.8rem 1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                        background: 'transparent',
+                        border: 'none',
+                        color: 'var(--error)',
+                        borderRadius: '0.75rem',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        textAlign: 'left'
+                      }}
+                      className="dropdown-item logout"
+                    >
+                      <LogOut size={18} />
+                      <span style={{ fontWeight: 500 }}>Chiqish</span>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </header>
 
