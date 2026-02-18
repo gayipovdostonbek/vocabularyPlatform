@@ -1,7 +1,7 @@
 {
   "dashboard": {
     "title": "Verb Master ⚡️",
-    "subtitle": "Learn 250 most used verbs and all their forms",
+    "subtitle": "Learn {{count}} most used verbs and all their forms",
     "startGame": "Start Game",
     "verbsFound": "{{count}} verbs found",
     "searchPlaceholder": "Search verb or translation...",
@@ -34,14 +34,15 @@
     "speaking": "Speaking Practice",
     "speakingDesc": "Practice pronouncing words correctly.",
     "verbsMode": "Verbs",
-    "verbsModeDesc": "250 most common verbs and their forms (V1, V2, V3).",
+    "verbsModeDesc": "{{count}} most common verbs and their forms (V1, V2, V3).",
     "grammarMode": "Grammar",
     "grammarModeDesc": "Learn English grammar rules through lessons and tests.",
     "viewMore": "View More",
     "startLearning": "Start Learning",
     "listenAll": "Listen All",
     "activityTitle": "Last 7 days activity",
-    "resetProgress": "Reset Progress"
+    "resetProgress": "Reset Progress",
+    "all": "All"
   },
   "days": {
     "mon": "Mon",

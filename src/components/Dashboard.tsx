@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { Word } from '../types';
 import { soundService } from '../api/soundService';
+import { verbsData } from '../data/verbsData';
 
 
 import type { UserProfile } from '../types';
@@ -90,8 +91,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    whileHover={{ y: -4, scale: 1.01 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                    whileHover={{ scale: 1.015, borderColor: level.color, boxShadow: `0 20px 40px -10px ${level.color}40` }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                     className="glass-panel"
                     style={{
                         marginBottom: '2rem',
@@ -109,7 +110,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                         <motion.div
-                            whileHover={{ scale: 1.1, rotate: 5 }}
+                            whileHover={{ filter: 'brightness(1.2)' }}
                             style={{
                                 fontSize: '2.5rem',
                                 background: 'var(--subtle-bg)',
@@ -147,7 +148,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <motion.div
                                 initial={{ width: 0 }}
                                 animate={{ width: `${xpProgress}%` }}
-                                transition={{ duration: 1.5, ease: 'circOut' }}
+                                transition={{ duration: 0.8, ease: 'circOut' }}
                                 style={{
                                     height: '100%',
                                     background: `linear-gradient(90deg, ${level.color}, #ffffff50)`,
@@ -169,8 +170,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                     {/* Main Progress Card */}
                     <motion.div
-                        whileHover={{ y: -4, scale: 1.01 }}
-                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        whileHover={{ scale: 1.015, borderColor: 'var(--accent)', boxShadow: '0 20px 40px -10px var(--accent-glow)' }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                         className="glass-panel"
                         style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden', borderRadius: '1.5rem' }}
                     >
@@ -217,7 +218,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                                 <motion.div
                                     initial={{ width: 0 }}
                                     animate={{ width: `${progress}%` }}
-                                    transition={{ duration: 1, ease: 'easeOut' }}
+                                    transition={{ duration: 0.6, ease: 'easeOut' }}
                                     style={{
                                         height: '100%',
                                         background: 'linear-gradient(90deg, var(--accent) 0%, #7c3aed 100%)',
@@ -236,8 +237,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                     {/* Word Statistics Card */}
                     <motion.div
-                        whileHover={{ y: -4, scale: 1.01 }}
-                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        whileHover={{ scale: 1.015, borderColor: '#3b82f6', boxShadow: '0 20px 40px -10px rgba(59, 130, 246, 0.3)' }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                         className="glass-panel"
                         onClick={() => navigate('/manage')}
                         style={{ padding: '1.5rem', cursor: 'pointer', position: 'relative', overflow: 'hidden', borderRadius: '1.5rem' }}
@@ -273,8 +274,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                     {/* Streak Card */}
                     <motion.div
-                        whileHover={{ y: -4, scale: 1.01 }}
-                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        whileHover={{ scale: 1.015, borderColor: '#f59e0b', boxShadow: '0 20px 40px -10px rgba(245, 158, 11, 0.3)' }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                         className="glass-panel"
                         style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden', borderRadius: '1.5rem' }}
                     >
@@ -310,8 +311,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                     {/* Coins Card */}
                     <motion.div
-                        whileHover={{ y: -4, scale: 1.01 }}
-                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        whileHover={{ scale: 1.015, borderColor: 'var(--success)', boxShadow: '0 20px 40px -10px rgba(16, 185, 129, 0.3)' }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                         className="glass-panel"
                         style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden', borderRadius: '1.5rem' }}
                     >
@@ -380,8 +381,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                         <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                             <motion.div
-                                animate={{ y: [0, -5, 0] }}
-                                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                                animate={{ y: [0, -4, 0], boxShadow: ['0 10px 30px rgba(124, 58, 237, 0.2)', '0 15px 40px rgba(124, 58, 237, 0.4)', '0 10px 30px rgba(124, 58, 237, 0.2)'] }}
+                                transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                                whileHover={{ scale: 1.05, filter: 'brightness(1.1)' }}
                                 style={{
                                     background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)',
                                     color: 'white',
@@ -484,16 +486,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     }}>
                         {/* Flashcards */}
                         <motion.div
-                            whileHover={{ y: -4, scale: 1.01 }}
-                            whileTap={{ scale: 0.98 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            whileHover="hover"
+                            initial="initial"
                             className="glass-panel interactable"
                             onClick={() => onStart('flashcard')}
                             style={{ padding: '2rem', cursor: 'pointer', borderRadius: '1.75rem', position: 'relative', overflow: 'hidden' }}
+                            variants={{
+                                hover: { scale: 1.015, borderColor: 'var(--accent)', boxShadow: '0 20px 40px -10px var(--accent-glow)' }
+                            }}
                         >
-                            <div style={{ marginBottom: '1.5rem', background: 'rgba(139, 92, 246, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem' }}>
+                            <motion.div
+                                variants={{ hover: { scale: 1.1, rotate: 5, background: 'rgba(139, 92, 246, 0.25)' } }}
+                                style={{ marginBottom: '1.5rem', background: 'rgba(139, 92, 246, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem', transition: 'all 0.15s' }}
+                            >
                                 <Play size={32} style={{ color: 'var(--accent)' }} />
-                            </div>
+                            </motion.div>
                             <h4 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.75rem 0' }}>{t('dashboard.flashcards')}</h4>
                             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>{t('dashboard.flashcardsDesc')}</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--accent)', fontWeight: 700, fontSize: '0.95rem' }}>
@@ -503,16 +510,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                         {/* Quiz */}
                         <motion.div
-                            whileHover={{ y: -4, scale: 1.01 }}
-                            whileTap={{ scale: 0.98 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            whileHover="hover"
+                            initial="initial"
                             className="glass-panel interactable"
                             onClick={() => onStart('quiz')}
                             style={{ padding: '2rem', cursor: 'pointer', borderRadius: '1.75rem', position: 'relative', overflow: 'hidden' }}
+                            variants={{
+                                hover: { scale: 1.015, borderColor: 'var(--success)', boxShadow: '0 20px 40px -10px rgba(16, 185, 129, 0.3)' }
+                            }}
                         >
-                            <div style={{ marginBottom: '1.5rem', background: 'rgba(16, 185, 129, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem' }}>
+                            <motion.div
+                                variants={{ hover: { scale: 1.1, rotate: -5, background: 'rgba(16, 185, 129, 0.25)' } }}
+                                style={{ marginBottom: '1.5rem', background: 'rgba(16, 185, 129, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem', transition: 'all 0.15s' }}
+                            >
                                 <Award size={32} style={{ color: 'var(--success)' }} />
-                            </div>
+                            </motion.div>
                             <h4 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.75rem 0' }}>{t('dashboard.multipleChoice')}</h4>
                             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>{t('dashboard.multipleChoiceDesc')}</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--success)', fontWeight: 700, fontSize: '0.95rem' }}>
@@ -522,16 +534,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                         {/* Spelling */}
                         <motion.div
-                            whileHover={{ y: -4, scale: 1.01 }}
-                            whileTap={{ scale: 0.98 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            whileHover="hover"
+                            initial="initial"
                             className="glass-panel interactable"
                             onClick={() => onStart('spelling')}
                             style={{ padding: '2rem', cursor: 'pointer', borderRadius: '1.75rem', position: 'relative', overflow: 'hidden' }}
+                            variants={{
+                                hover: { scale: 1.015, borderColor: '#3b82f6', boxShadow: '0 20px 40px -10px rgba(59, 130, 246, 0.3)' }
+                            }}
                         >
-                            <div style={{ marginBottom: '1.5rem', background: 'rgba(59, 130, 246, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem' }}>
+                            <motion.div
+                                variants={{ hover: { scale: 1.1, rotate: 10, background: 'rgba(59, 130, 246, 0.25)' } }}
+                                style={{ marginBottom: '1.5rem', background: 'rgba(59, 130, 246, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem', transition: 'all 0.15s' }}
+                            >
                                 <Keyboard size={32} style={{ color: '#3b82f6' }} />
-                            </div>
+                            </motion.div>
                             <h4 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.75rem 0' }}>{t('dashboard.spelling')}</h4>
                             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>{t('dashboard.spellingDesc')}</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#3b82f6', fontWeight: 700, fontSize: '0.95rem' }}>
@@ -541,16 +558,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                         {/* Speaking Practice */}
                         <motion.div
-                            whileHover={{ y: -4, scale: 1.01 }}
-                            whileTap={{ scale: 0.98 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            whileHover="hover"
+                            initial="initial"
                             className="glass-panel interactable"
                             onClick={() => onStart('speaking')}
                             style={{ padding: '2rem', cursor: 'pointer', borderRadius: '1.75rem', position: 'relative', overflow: 'hidden' }}
+                            variants={{
+                                hover: { scale: 1.015, borderColor: '#ec4899', boxShadow: '0 20px 40px -10px rgba(236, 72, 153, 0.3)' }
+                            }}
                         >
-                            <div style={{ marginBottom: '1.5rem', background: 'rgba(236, 72, 153, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem' }}>
+                            <motion.div
+                                variants={{ hover: { scale: 1.15, background: 'rgba(236, 72, 153, 0.25)' } }}
+                                style={{ marginBottom: '1.5rem', background: 'rgba(236, 72, 153, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem', transition: 'all 0.15s' }}
+                            >
                                 <Mic size={32} style={{ color: '#ec4899' }} />
-                            </div>
+                            </motion.div>
                             <h4 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.75rem 0' }}>{t('dashboard.speaking')}</h4>
                             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>{t('dashboard.speakingDesc')}</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: '#ec4899', fontWeight: 700, fontSize: '0.95rem' }}>
@@ -560,18 +582,23 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                         {/* Verbs Section */}
                         <motion.div
-                            whileHover={{ y: -4, scale: 1.01 }}
-                            whileTap={{ scale: 0.98 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            whileHover="hover"
+                            initial="initial"
                             className="glass-panel interactable"
                             onClick={() => navigate('/verbs')}
                             style={{ padding: '2rem', cursor: 'pointer', borderRadius: '1.75rem', position: 'relative', overflow: 'hidden' }}
+                            variants={{
+                                hover: { scale: 1.015, borderColor: 'var(--success)', boxShadow: '0 20px 40px -10px rgba(16, 185, 129, 0.3)' }
+                            }}
                         >
-                            <div style={{ marginBottom: '1.5rem', background: 'rgba(16, 185, 129, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem' }}>
+                            <motion.div
+                                variants={{ hover: { scale: 1.1, rotate: 180, background: 'rgba(16, 185, 129, 0.25)' } }}
+                                style={{ marginBottom: '1.5rem', background: 'rgba(16, 185, 129, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem', transition: 'all 0.15s' }}
+                            >
                                 <Sparkles size={32} style={{ color: 'var(--success)' }} />
-                            </div>
+                            </motion.div>
                             <h4 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.75rem 0' }}>{t('dashboard.verbsMode')}</h4>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>{t('dashboard.verbsModeDesc')}</p>
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>{t('dashboard.verbsModeDesc', { count: verbsData.length })}</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', color: 'var(--success)', fontWeight: 700, fontSize: '0.95rem' }}>
                                 {t('dashboard.viewMore')} <ArrowLeft size={18} style={{ transform: 'rotate(180deg)' }} />
                             </div>
@@ -579,16 +606,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
                         {/* Grammar Section */}
                         <motion.div
-                            whileHover={{ y: -4, scale: 1.01 }}
-                            whileTap={{ scale: 0.98 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                            whileHover="hover"
+                            initial="initial"
                             className="glass-panel interactable"
                             onClick={() => navigate('/grammar')}
                             style={{ padding: '2rem', cursor: 'pointer', borderRadius: '1.75rem', position: 'relative', overflow: 'hidden' }}
+                            variants={{
+                                hover: { scale: 1.015, borderColor: '#f59e0b', boxShadow: '0 20px 40px -10px rgba(245, 158, 11, 0.3)' }
+                            }}
                         >
-                            <div style={{ marginBottom: '1.5rem', background: 'rgba(245, 158, 11, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem' }}>
+                            <motion.div
+                                variants={{ hover: { scale: 1.1, background: 'rgba(245, 158, 11, 0.25)' } }}
+                                style={{ marginBottom: '1.5rem', background: 'rgba(245, 158, 11, 0.15)', width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '1.25rem', transition: 'all 0.3s' }}
+                            >
                                 <BookOpen size={32} style={{ color: '#f59e0b' }} />
-                            </div>
+                            </motion.div>
                             <h4 style={{ fontSize: '1.4rem', fontWeight: 800, margin: '0 0 0.75rem 0' }}>{t('dashboard.grammarMode')}</h4>
                             <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem', marginBottom: '2rem', lineHeight: 1.6 }}>
                                 {t('dashboard.grammarModeDesc')}

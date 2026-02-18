@@ -66,13 +66,14 @@ export const VerbsDashboard: React.FC = () => {
                         {t('dashboard.title')}
                     </h2>
                     <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', marginBottom: '1.5rem', maxWidth: '600px', margin: '0 auto' }}>
-                        {t('dashboard.subtitle')}
+                        {t('dashboard.subtitle', { count: verbsData.length })}
                     </p>
                 </motion.div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', marginTop: '2.5rem' }}>
                     <motion.button
-                        whileHover={{ scale: 1.05 }}
+                        whileHover={{ scale: 1.05, filter: 'brightness(1.1)', boxShadow: '0 20px 50px -10px var(--accent-glow)' }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => navigate('/verbs/game')}
                         className="btn btn-primary"
@@ -248,7 +249,8 @@ export const VerbsDashboard: React.FC = () => {
                             <motion.div
                                 layout
                                 key={verb.id}
-                                whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                                whileHover={{ scale: 1.015, borderColor: 'var(--accent)', boxShadow: '0 20px 40px -10px var(--accent-glow)' }}
+                                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                                 className="glass-panel verb-card-premium"
                                 onClick={() => setActiveVerbId(activeVerbId === verb.id ? null : verb.id)}
                                 style={{
@@ -437,7 +439,7 @@ export const VerbsDashboard: React.FC = () => {
                                                 style={{
                                                     cursor: 'pointer',
                                                     background: activeVerbId === verb.id ? 'rgba(99, 102, 241, 0.08)' : 'transparent',
-                                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                                                    transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)'
                                                 }}
                                             >
                                                 <td style={{ padding: '1.5rem 1.5rem' }}>
@@ -491,7 +493,8 @@ export const VerbsDashboard: React.FC = () => {
                                                 <td style={{ padding: '1.5rem 1.5rem', textAlign: 'right' }}>
                                                     <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                                                         <motion.button
-                                                            whileHover={{ scale: 1.1, backgroundColor: 'var(--accent)', color: 'white' }}
+                                                            whileHover={{ scale: 1.15, backgroundColor: 'var(--accent)', color: 'white', boxShadow: '0 0 15px var(--accent-glow)' }}
+                                                            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                                                             whileTap={{ scale: 0.9 }}
                                                             onClick={(e) => { e.stopPropagation(); soundService.speak(verb.base); }}
                                                             style={{
@@ -505,14 +508,15 @@ export const VerbsDashboard: React.FC = () => {
                                                                 alignItems: 'center',
                                                                 justifyContent: 'center',
                                                                 cursor: 'pointer',
-                                                                transition: 'all 0.3s'
+                                                                transition: 'all 0.1s'
                                                             }}
                                                             title="Pronounce"
                                                         >
                                                             <Volume2 size={20} />
                                                         </motion.button>
                                                         <motion.button
-                                                            whileHover={{ scale: 1.1, backgroundColor: '#10b981', color: 'white' }}
+                                                            whileHover={{ scale: 1.15, backgroundColor: '#10b981', color: 'white', boxShadow: '0 0 15px rgba(16, 185, 129, 0.3)' }}
+                                                            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                                                             whileTap={{ scale: 0.9 }}
                                                             onClick={(e) => { e.stopPropagation(); playAllForms(verb); }}
                                                             style={{
@@ -526,14 +530,15 @@ export const VerbsDashboard: React.FC = () => {
                                                                 alignItems: 'center',
                                                                 justifyContent: 'center',
                                                                 cursor: 'pointer',
-                                                                transition: 'all 0.3s'
+                                                                transition: 'all 0.1s'
                                                             }}
                                                             title="Listen All Forms"
                                                         >
                                                             <PlayCircle size={20} />
                                                         </motion.button>
                                                         <motion.button
-                                                            whileHover={{ scale: 1.1, rotate: activeVerbId === verb.id ? 180 : 0 }}
+                                                            whileHover={{ scale: 1.2, color: 'var(--accent)', rotate: [0, -10, 10, 0] }}
+                                                            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                                                             whileTap={{ scale: 0.9 }}
                                                             style={{
                                                                 background: 'var(--subtle-bg)',
@@ -546,7 +551,7 @@ export const VerbsDashboard: React.FC = () => {
                                                                 alignItems: 'center',
                                                                 justifyContent: 'center',
                                                                 cursor: 'pointer',
-                                                                transition: 'all 0.3s'
+                                                                transition: 'all 0.1s'
                                                             }}
                                                         >
                                                             <Info size={20} />

@@ -201,8 +201,9 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                     <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.1, backgroundColor: 'var(--subtle-bg)', borderColor: 'var(--accent)', boxShadow: '0 0 20px var(--accent-glow)' }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                        whileTap={{ scale: 0.9 }}
                         className="interactable"
                         onClick={handleSync}
                         disabled={syncing}
@@ -222,8 +223,9 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                         <RefreshCw size={20} className={syncing ? 'spin' : ''} />
                     </motion.button>
                     <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.1, backgroundColor: 'rgba(239, 68, 68, 0.1)', borderColor: '#ef4444', color: '#ef4444', boxShadow: '0 0 20px rgba(239, 68, 68, 0.2)' }}
+                        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+                        whileTap={{ scale: 0.9 }}
                         className="interactable"
                         onClick={() => navigate('/')}
                         style={{
@@ -249,7 +251,8 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 className="glass-panel"
-                style={{ padding: '2rem', borderRadius: '1.5rem', border: '1px solid var(--accent-glow)', marginBottom: '2.5rem' }}
+                whileHover={{ boxShadow: '0 20px 50px -10px var(--accent-glow)', borderColor: 'var(--accent)' }}
+                style={{ padding: '2rem', borderRadius: '1.5rem', border: '1px solid var(--accent-glow)', marginBottom: '2.5rem', transition: 'all 0.2s' }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
                     <div style={{ background: 'var(--accent-glow)', width: '40px', height: '40px', borderRadius: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -272,7 +275,7 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                                         </button>
                                     )}
                                     <motion.button
-                                        whileHover={{ scale: 1.1, color: 'var(--accent)' }}
+                                        whileHover={{ scale: 1.2, color: 'var(--accent)', rotate: [0, -10, 10, 0] }}
                                         type="button"
                                         onClick={handleAutoFill}
                                         disabled={autoFilling || !newEnglish}
@@ -338,7 +341,8 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                             </div>
 
                             <motion.button
-                                whileHover={{ scale: 1.02, translateY: -2 }}
+                                whileHover={{ scale: 1.02, filter: 'brightness(1.1)', boxShadow: '0 15px 30px -5px rgba(124, 58, 237, 0.5)' }}
+                                transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                                 whileTap={{ scale: 0.98 }}
                                 type="submit"
                                 disabled={loading}
@@ -448,7 +452,7 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
-                                transition={{ duration: 0.2, delay: idx * 0.02 }}
+                                transition={{ duration: 0.15, delay: idx * 0.01 }}
                                 className="glass-panel"
                                 style={{
                                     padding: '1.5rem',
@@ -495,11 +499,12 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '0.6rem' }}>
                                                         <h3 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 900, letterSpacing: '-0.5px' }}>{word.english}</h3>
                                                         <motion.button
-                                                            whileHover={{ scale: 1.15 }}
+                                                            whileHover={{ scale: 1.1, backgroundColor: 'var(--accent)', color: 'white', boxShadow: '0 0 15px var(--accent-glow)' }}
+                                                            transition={{ type: 'spring', stiffness: 500, damping: 25 }}
                                                             whileTap={{ scale: 0.9 }}
                                                             onClick={() => soundService.speak(word.english)}
                                                             className="interactable"
-                                                            style={{ background: 'var(--accent-glow)', border: 'none', color: 'var(--accent)', cursor: 'pointer', padding: '0.5rem', borderRadius: '0.6rem', display: 'flex' }}
+                                                            style={{ background: 'var(--accent-glow)', border: 'none', color: 'var(--accent)', cursor: 'pointer', padding: '0.5rem', borderRadius: '0.6rem', display: 'flex', transition: 'all 0.1s' }}
                                                         >
                                                             <Volume2 size={16} />
                                                         </motion.button>
@@ -531,10 +536,10 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                                     </div>
                                     {!editingId && (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => startEdit(word)} className="interactable" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--border-color)', width: '48px', height: '48px', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)', cursor: 'pointer' }}>
+                                            <motion.button whileHover={{ scale: 1.1, borderColor: 'var(--accent)', color: 'var(--accent)', boxShadow: '0 0 15px var(--accent-glow)' }} transition={{ type: 'spring', stiffness: 500, damping: 25 }} whileTap={{ scale: 0.9 }} onClick={() => startEdit(word)} className="interactable" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--border-color)', width: '48px', height: '48px', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.1s' }}>
                                                 <Pencil size={22} />
                                             </motion.button>
-                                            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handleDelete(word.id)} className="interactable" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--border-color)', width: '48px', height: '48px', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', cursor: 'pointer' }}>
+                                            <motion.button whileHover={{ scale: 1.1, borderColor: '#ef4444', color: '#ef4444', boxShadow: '0 0 15px rgba(239, 68, 68, 0.2)' }} transition={{ type: 'spring', stiffness: 500, damping: 25 }} whileTap={{ scale: 0.9 }} onClick={() => handleDelete(word.id)} className="interactable" style={{ background: 'var(--subtle-bg)', border: '1px solid var(--border-color)', width: '48px', height: '48px', borderRadius: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', cursor: 'pointer', transition: 'all 0.1s' }}>
                                                 <Trash2 size={22} />
                                             </motion.button>
                                         </div>
@@ -587,7 +592,7 @@ export const WordManager: React.FC<WordManagerProps> = ({ userId, words, initial
                             className="glass-panel"
                             style={{ padding: '3.5rem 2.5rem', maxWidth: '420px', textAlign: 'center', borderRadius: '2.5rem', border: '1px solid rgba(239, 68, 68, 0.4)' }}
                         >
-                            <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', width: '90px', height: '90px', borderRadius: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem', transform: 'rotate(-5deg)' }}>
+                            <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', width: '90px', height: '90px', borderRadius: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 2rem' }}>
                                 <AlertTriangle size={48} />
                             </div>
                             <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.75rem', fontWeight: 900 }}>O'chirib tashlaysizmi?</h3>

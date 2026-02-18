@@ -1,7 +1,7 @@
 {
   "dashboard": {
     "title": "Verb Master ⚡️",
-    "subtitle": "250 ta eng ko'p qo'llaniladigan fe'llar va ularning barcha shakllarini yodlang",
+    "subtitle": "{{count}} ta eng ko'p qo'llaniladigan fe'llar va ularning barcha shakllarini yodlang",
     "startGame": "O'yinni boshlash",
     "verbsFound": "{{count}} ta fe'l topildi",
     "searchPlaceholder": "Fe'lni yoki tarjimani qidiring...",
@@ -34,14 +34,15 @@
     "speaking": "Talaffuz Mashqi",
     "speakingDesc": "So'zlarni to'g'ri talaffuz qilishni mashq qiling.",
     "verbsMode": "Fe'llar",
-    "verbsModeDesc": "250 ta eng ko'p qo'llaniladigan fe'llar va ularning shakllari (V1, V2, V3).",
+    "verbsModeDesc": "{{count}} ta eng ko'p qo'llaniladigan fe'llar va ularning shakllari (V1, V2, V3).",
     "grammarMode": "Grammatika",
     "grammarModeDesc": "Ingliz tili qoidalarini darslar, misollar va testlar orqali o'rganing.",
     "viewMore": "Ko'rish",
     "startLearning": "O'rganish",
     "listenAll": "Hammasini tinglash",
     "activityTitle": "Oxirgi 7 kunlik faollik",
-    "resetProgress": "Progressni tozalash"
+    "resetProgress": "Progressni tozalash",
+    "all": "Hammasi"
   },
   "days": {
     "mon": "Dush",
